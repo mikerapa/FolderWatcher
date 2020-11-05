@@ -30,22 +30,30 @@ func TestWatcher_AddFolder(t *testing.T) {
 		name    string
 		path      string
 		recursive bool
+		showHidden bool
 		wantAdd bool
 		wantErr bool
 	}{
-		{name: "add a bad path", path: "whehrkh", recursive: false, wantAdd: false, wantErr: true},
-		{name: "add a valid path", path: "testFolder", recursive: false, wantAdd: true, wantErr: false},
+		{name: "add a bad path", path: "whehrkh", recursive: false, showHidden:false, wantAdd: false, wantErr: true},
+		{name: "add a valid path", path: "testFolder", recursive: false, showHidden:false, wantAdd: true, wantErr: false},
 	}
+	// populate the test folder with test files
+	setupTestFiles()
+	defer tearDownTestFiles()
 	for _, tt := range tests {
 		watcher := New()
 		t.Run(tt.name, func(t *testing.T) {
-			if err := watcher.AddFolder(tt.path, tt.recursive); (err != nil) != tt.wantErr {
-				t.Errorf("AddFolder() error = %v, wantErr %v", err, tt.wantErr)
+			if err := watcher.AddFolder(tt.path, tt.recursive, tt.showHidden); (err != nil) != tt.wantErr {
+				t.Errorf("%s AddFolder() error = %v, wantErr %v", tt.name, err, tt.wantErr)
 			}
 
 			// check if the path was added to the list
 			if (len(watcher.RequestedWatches)==0) == tt.wantAdd{
-				t.Errorf("AddFolder() wantAdd = %v, got %v", tt.wantAdd, len(watcher.RequestedWatches)==0)
+				t.Errorf("%s AddFolder() wantAdd = %v, got %v", tt.name, tt.wantAdd, len(watcher.RequestedWatches)==0)
+			}
+
+			if tt.wantAdd && len(watcher.watchedFiles)==0{
+				t.Errorf("%s AddFolder() files should have been added to the watchedFiles map. 0 were found.", tt.name)
 			}
 		})
 	}
@@ -62,9 +70,12 @@ func TestWatcher_RemoveFolder(t *testing.T) {
 		{name: "folder not in the list and return error", path: "dummypath", returnErrorIfNotFound: true, shouldRemoveFolder: false},
 		{name: "folder path in the list", path:"testFolder", returnErrorIfNotFound: false, shouldRemoveFolder: true},
 	}
+	// populate the test folder with test files
+	setupTestFiles()
+	defer tearDownTestFiles()
 	for _, tt := range tests {
 		watcher := New()
-		watcher.AddFolder("testFolder", false)
+		watcher.AddFolder("testFolder", true, false)
 
 		t.Run(tt.name, func(t *testing.T) {
 			// make sure an error is returned if it should
@@ -75,6 +86,11 @@ func TestWatcher_RemoveFolder(t *testing.T) {
 			// test that the folder was removed
 			if tt.shouldRemoveFolder && len(watcher.RequestedWatches) != 0 {
 				t.Errorf("the RequestedWatches list should be empty")
+			}
+
+			// make sure the files are removed from the watchedFiles list
+			if tt.shouldRemoveFolder && len(watcher.watchedFiles)!=0{
+				t.Errorf("%s RemoveFolder() after removing path, there should be 0 files watched.", tt.name)
 			}
 
 		})

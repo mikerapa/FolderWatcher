@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"math/rand"
 	"os"
-	"path"
 	"strings"
 	"testing"
 	"time"
@@ -18,21 +17,7 @@ func randomizedFilePath(pathTemplate string) string {
 	return fmt.Sprintf(pathTemplate, rndNum)
 }
 
-func writeToFile(path string, fileContent string){
-	f1, _ := os.Create(path)
-	defer f1.Close()
-	f1.WriteString(fileContent)
-}
 
-func deleteFile(filePath string){
-	// as a safety measure, only delete a file with a txt extension
-	if path.Ext(filePath) == ".txt" {
-		os.Remove(filePath)
-	} else {
-		// should not have reached this point. Cannot delete a file with an extension other than txt.
-		fmt.Printf("attempted to delete %s (extension %s) but it was prevented", filePath, path.Ext(filePath))
-	}
-}
 
 func TestIsValidPath(t *testing.T) {
 	// Try an invalid folder path
@@ -96,21 +81,10 @@ func assertFileInMap(t *testing.T, fileList map[string]os.FileInfo, filenames ..
 }
 
 func Test_GetFileList(t *testing.T) {
-	const(
-		normalFilePath = "testFolder/testFile.txt"
-		hiddenFilePath = "testFolder/.hiddenTestFile.txt"
-		normalFilePath2 = "testFolder/subFolder/testFile2.txt"
-		hiddenFilePath2= "testFolder/subFolder/.hiddenTestFile2.txt"
-	)
+
 	// set up the test folder
-	writeToFile(normalFilePath, "nothing")
-	writeToFile(hiddenFilePath, "empty file")
-	writeToFile(normalFilePath2, "nothing")
-	writeToFile(hiddenFilePath2, "empty file")
-	defer deleteFile(normalFilePath)
-	defer deleteFile(hiddenFilePath)
-	defer deleteFile(normalFilePath2)
-	defer deleteFile(hiddenFilePath2)
+	setupTestFiles()
+	defer tearDownTestFiles()
 
 	// Try finding files recursive, without hidden files
 	fileListRecursiveNotHidden, err := GetFileList("testFolder",true, false )
