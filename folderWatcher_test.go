@@ -1,6 +1,7 @@
 package folderWatcher
 
 import (
+	"math"
 	"testing"
 )
 
@@ -93,6 +94,24 @@ func TestWatcher_RemoveFolder(t *testing.T) {
 				t.Errorf("%s RemoveFolder() after removing path, there should be 0 files watched.", tt.name)
 			}
 
+		})
+	}
+}
+
+func TestCalculateInterval(t *testing.T) {
+	tests := []struct {
+		name string
+		watchedFileCount int
+	}{
+		{name: "smallest number", watchedFileCount: 1},
+		{name: "largest number", watchedFileCount: math.MaxInt32},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			calculatedValue :=  CalculateInterval(tt.watchedFileCount)
+			if calculatedValue< MinimumIntervalTime || calculatedValue > MaximumIntervalTime{
+				t.Errorf("CalculateInterval() = %v is out of range. Min:%v, Max:%v", calculatedValue, MinimumIntervalTime, MaximumIntervalTime)
+			}
 		})
 	}
 }

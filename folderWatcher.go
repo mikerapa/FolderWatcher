@@ -3,6 +3,7 @@ package folderWatcher
 import (
 	"errors"
 	"fmt"
+	"math"
 	"os"
 )
 
@@ -32,6 +33,16 @@ func New() Watcher {
 	return *newWatcher
 }
 
+func CalculateInterval(watchedFileCount int) int{
+	weightedInt := float64(watchedFileCount) * .5
+	// enforce min and max
+	return int(math.Min(math.Max(MinimumIntervalTime, weightedInt), MaximumIntervalTime))
+}
+
+func (w *Watcher) UpdateInterval(){
+	w.Interval = CalculateInterval(len(w.watchedFiles))
+}
+
 func (w *Watcher) AddFolder(path string, recursive bool, showHidden bool) (err error){
 	// check that the path is valid, return error if it's not
 	if !IsValidPath(path){
@@ -51,7 +62,7 @@ func (w *Watcher) AddFolder(path string, recursive bool, showHidden bool) (err e
 	for p, file := range newFilesToWatch{
 		w.watchedFiles[p]=file
 	}
-
+	w.UpdateInterval()
 	return
 }
 
@@ -66,7 +77,8 @@ func (w *Watcher) RemoveFolder(path string, returnErrorIfNotFound bool) ( err er
 		return
 	}
 
-	// get a list of files to remove
+	// get a list of files to remove. Including recursive and hidden files, even though they may not have been included
+	// when the folder was added.
 	watchedFilesToRemove, err := GetFileList(path, true, true)
 	if err!=nil{
 		return
@@ -77,5 +89,11 @@ func (w *Watcher) RemoveFolder(path string, returnErrorIfNotFound bool) ( err er
 		delete(w.watchedFiles, p)
 	}
 	delete(w.RequestedWatches, path)
+	w.UpdateInterval()
 	return
+}
+
+func (w *WatchRequest) Start(){
+
+
 }
