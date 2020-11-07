@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math"
 	"os"
+	"time"
 )
 
 const (
@@ -21,6 +22,8 @@ type Watcher struct {
 	RequestedWatches map[string]WatchRequest
 	Interval int
 	watchedFiles map[string]os.FileInfo
+	Stop chan bool
+	Stopped chan bool
 }
 
 func New() Watcher {
@@ -28,6 +31,8 @@ func New() Watcher {
 		RequestedWatches: make(map[string]WatchRequest),
 		Interval: MinimumIntervalTime,
 		watchedFiles: make(map[string]os.FileInfo),
+		Stop : make(chan bool),
+		Stopped: make(chan bool),
 	}
 
 	return *newWatcher
@@ -93,7 +98,48 @@ func (w *Watcher) RemoveFolder(path string, returnErrorIfNotFound bool) ( err er
 	return
 }
 
-func (w *WatchRequest) Start(){
+func (w *Watcher) StopWatch(){
+	// TODO Change the state
+	fmt.Println("StopWatch()")
+	w.Stopped<-true
+}
+
+func (w *Watcher) Start(){
+	intervalChan := make(chan bool)
+	runServiceLoop := true
+	// Service loop
+	go func(){
+		for {
+			fmt.Println("starting interval sleep")
+			time.Sleep(time.Duration(w.Interval) * time.Millisecond )
+			fmt.Println("ending interval sleep")
+
+			// exit service loop
+			if !runServiceLoop{
+				break
+			}
+
+			intervalChan<-true
+		}
+
+	}()
+
+	// event loop
+	go func(){
+		for {
+			select {
+				case <- w.Stop:
+					runServiceLoop=false
+					w.StopWatch()
+				case <- intervalChan:
+					fmt.Printf("Watching %d files", len(w.watchedFiles))
+					fmt.Println("Interval", w.Interval)
+
+			}
+
+		}
+
+	}()
 
 
 }
