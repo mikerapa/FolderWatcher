@@ -14,6 +14,8 @@ func (fe *FileEvent) EventName() string {
 		return "Add"
 	case Remove:
 		return "Remove"
+	case Write:
+		return "Write"
 	default:
 		return "Unknown"
 
@@ -26,5 +28,6 @@ type FileChange int32
 const (
 	Add FileChange = iota
 	Remove
+	Write
 )
 

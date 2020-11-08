@@ -139,6 +139,65 @@ func TestAddFileEvent(t *testing.T) {
 
 }
 
+
+func TestWriteFileEvent(t *testing.T) {
+	// set up the watcher and a file
+	writeToFile(normalFilePath, "nothing")
+	watcher := New()
+	watcher.AddFolder("testFolder", false, false)
+
+	// get the mod time for the newly created file. This will be used to for a comparison.
+	testFile,_ :=watcher.watchedFiles[normalFilePath]
+	initialModTime := testFile.ModTime()
+
+	defer deleteFile(normalFilePath)
+
+	// start the watcher and collect events
+	var receivedFileEvent FileEvent
+	watcher.Start()
+
+	go func () {
+		for {
+			select{
+			case <- watcher.Stopped:
+				return
+			case receivedFileEvent= <- watcher.FileChanged:
+			}
+		}
+	}()
+
+	// update the file and give some time to get the FileEvent on the channel
+	time.Sleep(1 * time.Second)
+	writeToFile(normalFilePath, "updated file content")
+	time.Sleep(2 * time.Second)
+
+
+
+	// make sure the correct FileEvent was received
+	if receivedFileEvent.FileChange != Write {
+		t.Errorf("Watcher did not send Write FileEvent to the FileChanged channel")
+	}
+
+	// make sure the path is included in the FileEvent
+	if receivedFileEvent.FilePath != normalFilePath{
+		t.Errorf("Filepath was not included in the FileEvent")
+	}
+
+	// make sure the updated file remains in the watched files list
+	newWatchedFile, fileFound := watcher.watchedFiles[normalFilePath]
+	if !fileFound{
+		t.Errorf("file %s should have remained in the list of watched files", normalFilePath)
+	}
+
+	// compare the mod time of the file in the watchedFiles list. It should be different that the orignial value
+	if newWatchedFile.ModTime() == initialModTime{
+		t.Errorf("the file in watchedFiles was not updated to one with a different modtime.")
+	}
+	watcher.Stop<-true
+}
+
+
+
 func TestRemoveFileEvent(t *testing.T) {
 	// set up the watcher and a file
 	watcher := New()

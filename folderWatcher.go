@@ -106,19 +106,25 @@ func (w *Watcher) RemoveFolder(path string, returnErrorIfNotFound bool) ( err er
 
 func (w *Watcher) scanForFileEvents(){
 	for _, requestedWatch := range w.RequestedWatches{
-		currentFileList, err := GetFileList(requestedWatch.Path, requestedWatch.Recursive, requestedWatch.ShowHidden)
+		newFileList, err := GetFileList(requestedWatch.Path, requestedWatch.Recursive, requestedWatch.ShowHidden)
 		if err != nil {
 			fmt.Println(err.Error())
 		}
 
 		// look for added files
 		go func(){
-			for currentFilePath, currentFile := range currentFileList{
-				_, existingFile := w.watchedFiles[currentFilePath]
-				if !existingFile{
+			for newFilePath, newFile := range newFileList {
+				existingFile, isExistingFile := w.watchedFiles[newFilePath]
+				if !isExistingFile {
 					// new file was found
-					w.watchedFiles[currentFilePath] = currentFile
-					w.FileChanged<- FileEvent{FileChange:Add, FilePath:currentFilePath}
+					w.watchedFiles[newFilePath] = newFile
+					w.FileChanged<- FileEvent{FileChange:Add, FilePath: newFilePath}
+				} else {
+					// check for file writes
+					if newFile.ModTime() != existingFile.ModTime(){
+						w.FileChanged<-FileEvent{FileChange:Write, FilePath: newFilePath}
+						w.watchedFiles[newFilePath] = newFile
+					}
 				}
 			}
 		}()
@@ -126,7 +132,7 @@ func (w *Watcher) scanForFileEvents(){
 		// look for removed files
 		go func() {
 			for path, _:= range w.watchedFiles{
-				_,stillExists := currentFileList[path]
+				_,stillExists := newFileList[path]
 				if !stillExists{
 					w.FileChanged<- FileEvent{FileChange: Remove, FilePath: path}
 					delete(w.watchedFiles, path)
@@ -168,7 +174,7 @@ func (w *Watcher) Start(){
 					runServiceLoop=false
 					w.StopWatch()
 				case <- intervalChan:
-					fmt.Printf("Watching %d files\n", len(w.watchedFiles))
+					//fmt.Printf("Watching %d files\n", len(w.watchedFiles))
 					w.scanForFileEvents()
 
 			}
