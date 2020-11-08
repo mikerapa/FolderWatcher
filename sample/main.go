@@ -13,12 +13,8 @@ func main() {
 	if err != nil {
 		panic(err.Error())
 	}
-	//stopChan := make (chan bool)
-	//stoppedChan :=make (chan bool)
-	//
-	//watcher.Stop = stopChan
-	//watcher.Stopped = stoppedChan
 
+	// collect events from the watcher
 	go func () {
 		for {
 			select{
@@ -26,6 +22,8 @@ func main() {
 					println("Got the stopped message")
 					wg.Done()
 					return
+				case fe:= <- watcher.FileChanged:
+					println(fe.EventName(), fe.FilePath)
 			}
 		}
 	}()

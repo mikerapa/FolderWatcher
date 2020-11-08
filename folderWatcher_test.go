@@ -3,6 +3,7 @@ package folderWatcher
 import (
 	"math"
 	"testing"
+	"time"
 )
 
 
@@ -97,6 +98,93 @@ func TestWatcher_RemoveFolder(t *testing.T) {
 		})
 	}
 }
+
+func TestAddFileEvent(t *testing.T) {
+	watcher := New()
+	watcher.AddFolder("testFolder", false, false)
+	var receivedFileEvent FileEvent
+	watcher.Start()
+	// collect events from the watcher
+	go func () {
+		for {
+			select{
+			case <- watcher.Stopped:
+				return
+			case receivedFileEvent= <- watcher.FileChanged:
+			}
+		}
+	}()
+
+	writeToFile(normalFilePath, "nothing")
+	defer deleteFile(normalFilePath)
+
+	time.Sleep(1 * time.Second)
+	watcher.Stop<-true
+
+	// make sure the current type of FileEvent was received
+	if receivedFileEvent.FileChange != Add {
+		t.Errorf("Watcher did not send Add FileEvent to the FileChanged channel")
+	}
+
+	// make sure the path was included in the FileEvent
+	if receivedFileEvent.FilePath != normalFilePath{
+		t.Errorf("Filepath was not included in the FileEvent")
+	}
+
+	// make sure the new file is in the watchedFiles
+	_, fileFound := watcher.watchedFiles[normalFilePath]
+	if !fileFound{
+		t.Errorf("%s should have been added to the watched files", normalFilePath)
+	}
+
+}
+
+func TestRemoveFileEvent(t *testing.T) {
+	// set up the watcher and a file
+	watcher := New()
+	watcher.AddFolder("testFolder", false, false)
+	writeToFile(normalFilePath, "nothing")
+	defer deleteFile(normalFilePath)
+
+	// start the watcher and collect events
+	var receivedFileEvent FileEvent
+	watcher.Start()
+
+	go func () {
+		for {
+			select{
+			case <- watcher.Stopped:
+				return
+			case receivedFileEvent= <- watcher.FileChanged:
+			}
+		}
+	}()
+
+	// delete the file and give some time to get the FileEvent on the channel
+	time.Sleep(1 * time.Second)
+	deleteFile(normalFilePath)
+	time.Sleep(1 * time.Second)
+
+	watcher.Stop<-true
+
+	// make sure the correct FileEvent was received
+	if receivedFileEvent.FileChange != Remove {
+		t.Errorf("Watcher did not send Remove FileEvent to the FileChanged channel")
+	}
+
+	// make sure the path is included in the FileEvent
+	if receivedFileEvent.FilePath != normalFilePath{
+		t.Errorf("Filepath was not included in the FileEvent")
+	}
+
+	// make sure the removed file is no longer being watched
+	_, fileFound := watcher.watchedFiles[normalFilePath]
+	if fileFound{
+		t.Errorf("file was not removed with the Remove FileEvent path=%s", normalFilePath)
+	}
+
+}
+
 
 func TestCalculateInterval(t *testing.T) {
 	tests := []struct {

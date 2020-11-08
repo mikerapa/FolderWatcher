@@ -13,10 +13,14 @@ const (
 	MaximumIntervalTime = 5000
 )
 
+
 type WatchRequest struct {
 	Path string
 	Recursive bool
+	ShowHidden bool
 }
+
+
 
 type Watcher struct {
 	RequestedWatches map[string]WatchRequest
@@ -24,6 +28,7 @@ type Watcher struct {
 	watchedFiles map[string]os.FileInfo
 	Stop chan bool
 	Stopped chan bool
+	FileChanged chan FileEvent
 }
 
 func New() Watcher {
@@ -33,6 +38,7 @@ func New() Watcher {
 		watchedFiles: make(map[string]os.FileInfo),
 		Stop : make(chan bool),
 		Stopped: make(chan bool),
+		FileChanged: make(chan FileEvent),
 	}
 
 	return *newWatcher
@@ -55,7 +61,7 @@ func (w *Watcher) AddFolder(path string, recursive bool, showHidden bool) (err e
 		return
 	}
 	// add the path to the list of watched folders
-	w.RequestedWatches[path] = WatchRequest{Path: path, Recursive: recursive}
+	w.RequestedWatches[path] = WatchRequest{Path: path, Recursive: recursive, ShowHidden: showHidden}
 
 	// Add the new set of files to watch
 	newFilesToWatch, err := GetFileList(path, recursive, showHidden)
@@ -98,6 +104,38 @@ func (w *Watcher) RemoveFolder(path string, returnErrorIfNotFound bool) ( err er
 	return
 }
 
+func (w *Watcher) scanForFileEvents(){
+	for _, requestedWatch := range w.RequestedWatches{
+		currentFileList, err := GetFileList(requestedWatch.Path, requestedWatch.Recursive, requestedWatch.ShowHidden)
+		if err != nil {
+			fmt.Println(err.Error())
+		}
+
+		// look for added files
+		go func(){
+			for currentFilePath, currentFile := range currentFileList{
+				_, existingFile := w.watchedFiles[currentFilePath]
+				if !existingFile{
+					// new file was found
+					w.watchedFiles[currentFilePath] = currentFile
+					w.FileChanged<- FileEvent{FileChange:Add, FilePath:currentFilePath}
+				}
+			}
+		}()
+
+		// look for removed files
+		go func() {
+			for path, _:= range w.watchedFiles{
+				_,stillExists := currentFileList[path]
+				if !stillExists{
+					w.FileChanged<- FileEvent{FileChange: Remove, FilePath: path}
+					delete(w.watchedFiles, path)
+				}
+			}
+		}()
+	}
+}
+
 func (w *Watcher) StopWatch(){
 	// TODO Change the state
 	fmt.Println("StopWatch()")
@@ -110,9 +148,7 @@ func (w *Watcher) Start(){
 	// Service loop
 	go func(){
 		for {
-			fmt.Println("starting interval sleep")
 			time.Sleep(time.Duration(w.Interval) * time.Millisecond )
-			fmt.Println("ending interval sleep")
 
 			// exit service loop
 			if !runServiceLoop{
@@ -132,8 +168,8 @@ func (w *Watcher) Start(){
 					runServiceLoop=false
 					w.StopWatch()
 				case <- intervalChan:
-					fmt.Printf("Watching %d files", len(w.watchedFiles))
-					fmt.Println("Interval", w.Interval)
+					fmt.Printf("Watching %d files\n", len(w.watchedFiles))
+					w.scanForFileEvents()
 
 			}
 
