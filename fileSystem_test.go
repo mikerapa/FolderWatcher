@@ -48,7 +48,7 @@ func TestIsValidPath(t *testing.T) {
 	}
 
 	// clean up the temp file
-	deleteFile(newFilePath)
+	removeFiles(true, newFilePath)
 }
 
 func Test_isValidDirPath(t *testing.T) {

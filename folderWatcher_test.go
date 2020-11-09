@@ -117,7 +117,7 @@ func TestAddFileEvent(t *testing.T) {
 	}()
 
 	writeToFile(normalFilePath, "nothing")
-	defer deleteFile(normalFilePath)
+	defer removeFiles(true, normalFilePath)
 
 	time.Sleep(1 * time.Second)
 	watcher.Stop<-true
@@ -212,7 +212,7 @@ func TestWriteFileEvent(t *testing.T) {
 	testFile,_ :=watcher.watchedFiles[normalFilePath]
 	initialModTime := testFile.ModTime()
 
-	defer deleteFile(normalFilePath)
+	defer removeFiles(true, normalFilePath)
 
 	// start the watcher and collect events
 	var receivedFileEvent FileEvent
@@ -289,7 +289,7 @@ func TestRemoveFileEvent(t *testing.T) {
 
 	// delete the file and give some time to get the FileEvent on the channel
 	time.Sleep(1 * time.Second)
-	deleteFile(normalFilePath)
+	removeFiles(true, normalFilePath)
 	time.Sleep(1 * time.Second)
 
 	watcher.Stop<-true

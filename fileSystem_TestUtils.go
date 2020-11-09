@@ -24,10 +24,7 @@ func setupTestFiles(){
 
 func tearDownTestFiles(){
 	// remove test files from the test folder
-	deleteFile(normalFilePath)
-	deleteFile(hiddenFilePath)
-	deleteFile(normalFilePath2)
-	deleteFile(hiddenFilePath2)
+	removeFiles(true, normalFilePath, hiddenFilePath, normalFilePath2)
 
 }
 
@@ -72,18 +69,3 @@ func removeFiles(panicOnFailure bool, filePaths ... string){
 	}
 }
 
-
-// TODO deleteFile could be removed and removeFiles could be used in it's place
-func deleteFile(filePath string){
-	// as a safety measure, only delete a file with a txt extension
-	if path.Ext(filePath) == ".txt" {
-		err := os.Remove(filePath)
-		if err!=nil{
-			// if there is an error when trying to delete a file, the test should not continue
-			panic(err.Error())
-		}
-	} else {
-		// should not have reached this point. Cannot delete a file with an extension other than txt.
-		fmt.Printf("attempted to delete %s (extension %s) but it was prevented", filePath, path.Ext(filePath))
-	}
-}
