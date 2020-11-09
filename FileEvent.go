@@ -4,6 +4,8 @@ package folderWatcher
 type FileEvent struct {
 	FileChange
 	FilePath string
+	PreviousPath string
+	Description string
 
 }
 
@@ -16,6 +18,8 @@ func (fe *FileEvent) EventName() string {
 		return "Remove"
 	case Write:
 		return "Write"
+	case Move:
+		return "Move"
 	default:
 		return "Unknown"
 
@@ -29,5 +33,6 @@ const (
 	Add FileChange = iota
 	Remove
 	Write
+	Move
 )
 

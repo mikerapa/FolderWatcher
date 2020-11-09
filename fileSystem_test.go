@@ -30,7 +30,7 @@ func TestIsValidPath(t *testing.T) {
 	// try with the test folder
 	validFolderPath := "testFolder"
 	isValid = IsValidPath(validFolderPath)
-	if (!isValid) {
+	if !isValid {
 		t.Errorf("%s is a valid folder path", validFolderPath)
 	}
 
