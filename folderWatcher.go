@@ -30,6 +30,7 @@ type Watcher struct {
 	Stop chan bool
 	Stopped chan bool
 	FileChanged chan FileEvent
+	watchedFileMutex sync.Mutex
 }
 
 func New() Watcher {
@@ -40,9 +41,24 @@ func New() Watcher {
 		Stop : make(chan bool),
 		Stopped: make(chan bool),
 		FileChanged: make(chan FileEvent),
+		watchedFileMutex: sync.Mutex{},
 	}
 
 	return *newWatcher
+}
+
+// Remove a file from the watchedFiles list protecting the map with a mutex
+func (w *Watcher) removeWatchedFile(filepath string){
+	w.watchedFileMutex.Lock()
+	delete(w.watchedFiles, filepath)
+	w.watchedFileMutex.Unlock()
+}
+
+// Add an item to the watchedFiles list while protecting it with a mutex
+func (w *Watcher) addUpdateWatchedFile(filepath string, file os.FileInfo){
+	w.watchedFileMutex.Lock()
+	w.watchedFiles[filepath] = file
+	w.watchedFileMutex.Unlock()
 }
 
 func CalculateInterval(watchedFileCount int) int{
@@ -72,7 +88,7 @@ func (w *Watcher) AddFolder(path string, recursive bool, showHidden bool) (err e
 
 	// add files to the watchFiles list
 	for p, file := range newFilesToWatch{
-		w.watchedFiles[p]=file
+		w.addUpdateWatchedFile(p, file)
 	}
 	w.UpdateInterval()
 	return
@@ -98,7 +114,7 @@ func (w *Watcher) RemoveFolder(path string, returnErrorIfNotFound bool) ( err er
 
 	// remove the files from the watchedFiles map
 	for p := range watchedFilesToRemove{
-		delete(w.watchedFiles, p)
+		w.removeWatchedFile(p)
 	}
 	delete(w.RequestedWatches, path)
 	w.UpdateInterval()
@@ -106,10 +122,8 @@ func (w *Watcher) RemoveFolder(path string, returnErrorIfNotFound bool) ( err er
 }
 
 func (w *Watcher) scanForFileEvents(){
-	// TODO need to put a mutex around the watchedFiles map
 	// TODO this probably has a concurrency issue because the list of new files it outside of the go routine
 	for _, requestedWatch := range w.RequestedWatches{
-		watchedFileMutex := sync.Mutex{}
 		newFileList, err := GetFileList(requestedWatch.Path, requestedWatch.Recursive, requestedWatch.ShowHidden)
 		if err != nil {
 			fmt.Println(err.Error())
@@ -134,19 +148,15 @@ func (w *Watcher) scanForFileEvents(){
 								FilePath: newFilePath,
 								PreviousPath: path,
 								Description: fmt.Sprintf("File was moved from %s to %s", path, newFilePath)}
-							watchedFileMutex.Lock()
-							delete(w.watchedFiles, path)
-							w.watchedFiles[newFilePath] = newFile
-							watchedFileMutex.Unlock()
+							w.removeWatchedFile(path)
+							w.addUpdateWatchedFile(newFilePath, newFile)
 							break
 						}
 					}
 					// The file is in the new list of files, but not the watchedFiles list and the file was not moved.
 					// Process this as a new file.
 					if !matchFoundInWatchedFiles{
-						watchedFileMutex.Lock()
-						w.watchedFiles[newFilePath] = newFile
-						watchedFileMutex.Unlock()
+						w.addUpdateWatchedFile(newFilePath, newFile)
 						w.FileChanged<- FileEvent{FileChange:Add, FilePath: newFilePath,
 							Description: fmt.Sprintf("%s was added", newFilePath)}
 					}
@@ -156,7 +166,7 @@ func (w *Watcher) scanForFileEvents(){
 					if newFile.ModTime() != existingFile.ModTime(){
 						w.FileChanged<-FileEvent{FileChange:Write, FilePath: newFilePath,
 						Description: fmt.Sprintf("%s updated", newFilePath)}
-						w.watchedFiles[newFilePath] = newFile
+						w.addUpdateWatchedFile(newFilePath, newFile)
 					}
 				}
 			}
@@ -168,9 +178,7 @@ func (w *Watcher) scanForFileEvents(){
 				if !isInNewFilesList && ! isMovedFile{
 					w.FileChanged<- FileEvent{FileChange: Remove, FilePath: path,
 						Description: fmt.Sprintf("%s was removed", path)}
-					watchedFileMutex.Lock()
-					delete(w.watchedFiles, path)
-					watchedFileMutex.Unlock()
+					w.removeWatchedFile(path)
 				}
 			}
 		}()
@@ -178,6 +186,7 @@ func (w *Watcher) scanForFileEvents(){
 	}
 }
 
+// TODO change this function to that it can be called from outside of the package to stop the watcher
 func (w *Watcher) StopWatch(){
 	// TODO Change the state
 	//fmt.Println("StopWatch()")
