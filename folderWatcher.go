@@ -122,15 +122,16 @@ func (w *Watcher) RemoveFolder(path string, returnErrorIfNotFound bool) ( err er
 }
 
 func (w *Watcher) scanForFileEvents(){
-	// TODO this probably has a concurrency issue because the list of new files it outside of the go routine
-	for _, requestedWatch := range w.RequestedWatches{
-		newFileList, err := GetFileList(requestedWatch.Path, requestedWatch.Recursive, requestedWatch.ShowHidden)
-		if err != nil {
-			fmt.Println(err.Error())
-		}
 
+	for _, requestedWatch := range w.RequestedWatches{
 		// start processing by going through all of the flies in the new list
 		go func(){
+
+			newFileList, err := GetFileList(requestedWatch.Path, requestedWatch.Recursive, requestedWatch.ShowHidden)
+			if err != nil {
+				fmt.Println(err.Error())
+			}
+
 			movedFiles := make(map[string]string) // oldPath[newPath]
 			for newFilePath, newFile := range newFileList {
 				existingFile, isExistingFile := w.watchedFiles[newFilePath]
