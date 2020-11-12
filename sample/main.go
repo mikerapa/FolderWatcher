@@ -32,9 +32,9 @@ func main() {
 	wg.Add(1)
 	watcher.Start()
 	go func() {
-		time.Sleep(15 * time.Second)
+		time.Sleep(30 * time.Second)
 		println("Sending the stop message")
-		watcher.Stop<-true
+		watcher.Stop()
 	}()
 
 	wg.Wait()

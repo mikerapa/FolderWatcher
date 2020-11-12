@@ -21,16 +21,30 @@ type WatchRequest struct {
 	ShowHidden bool
 }
 
+// constants to represent the state of the watcher
+const (NotStarted WatcherState = 1
+	Running WatcherState = 2
+	Stopped WatcherState =3 )
+type WatcherState int
+
+func (ws WatcherState) String() string {
+	stateStrings:= [...]string{"Not Started", "Started", "Stopped"}
+	return stateStrings[ws]
+}
+
+func (ws *WatcherState) ToString() string {
+	return fmt.Sprintf("%v", ws)
+}
 
 
 type Watcher struct {
 	RequestedWatches map[string]WatchRequest
 	Interval int
 	watchedFiles map[string]os.FileInfo
-	Stop chan bool
 	Stopped chan bool
 	FileChanged chan FileEvent
 	watchedFileMutex sync.Mutex
+	State WatcherState
 }
 
 func New() Watcher {
@@ -38,10 +52,10 @@ func New() Watcher {
 		RequestedWatches: make(map[string]WatchRequest),
 		Interval: MinimumIntervalTime,
 		watchedFiles: make(map[string]os.FileInfo),
-		Stop : make(chan bool),
 		Stopped: make(chan bool),
 		FileChanged: make(chan FileEvent),
 		watchedFileMutex: sync.Mutex{},
+		State: NotStarted,
 	}
 
 	return *newWatcher
@@ -188,22 +202,22 @@ func (w *Watcher) scanForFileEvents(){
 }
 
 // TODO change this function to that it can be called from outside of the package to stop the watcher
-func (w *Watcher) StopWatch(){
-	// TODO Change the state
-	//fmt.Println("StopWatch()")
+func (w *Watcher) Stop(){
+
 	w.Stopped<-true
+	w.State = Stopped
 }
 
 func (w *Watcher) Start(){
 	intervalChan := make(chan bool)
-	runServiceLoop := true
+	w.State = Running
 	// Service loop
 	go func(){
 		for {
 			time.Sleep(time.Duration(w.Interval) * time.Millisecond )
 
 			// exit service loop
-			if !runServiceLoop{
+			if w.State != Running{
 				break
 			}
 
@@ -216,15 +230,10 @@ func (w *Watcher) Start(){
 	go func(){
 		for {
 			select {
-				case <- w.Stop:
-					runServiceLoop=false
-					w.StopWatch()
+
 				case <- intervalChan:
-					//fmt.Printf("Watching %d files\n", len(w.watchedFiles))
 					w.scanForFileEvents()
-
 			}
-
 		}
 
 	}()

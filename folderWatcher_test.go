@@ -26,6 +26,11 @@ func TestNew(t *testing.T) {
 		t.Errorf("folderWatch.New() is the incorrect default interval. got %d, wanted %d", newWatcher.Interval, MinimumIntervalTime)
 	}
 
+	// make sure the watcher is created in the correct state
+	if newWatcher.State != NotStarted{
+		t.Errorf("folderWatcher.New() watcher should have been created in the NotStarted state, got %s",  newWatcher.State.ToString())
+	}
+
 }
 
 func TestWatcher_AddFolder(t *testing.T) {
@@ -120,7 +125,7 @@ func TestAddFileEvent(t *testing.T) {
 	defer removeFiles(true, normalFilePath)
 
 	time.Sleep(1 * time.Second)
-	watcher.Stop<-true
+	watcher.Stop()
 
 	// make sure the current type of FileEvent was received
 	if receivedFileEvent.FileChange != Add {
@@ -198,7 +203,7 @@ func TestMoveFileEvent(t *testing.T) {
 		t.Errorf("file %s should be in the list of watched files", normalFilePath)
 	}
 
-	watcher.Stop<-true
+	watcher.Stop()
 }
 
 
@@ -255,7 +260,7 @@ func TestWriteFileEvent(t *testing.T) {
 	if newWatchedFile.ModTime() == initialModTime{
 		t.Errorf("the file in watchedFiles was not updated to one with a different modtime.")
 	}
-	watcher.Stop<-true
+	watcher.Stop()
 
 
 	// Make sure the description is set
@@ -292,7 +297,7 @@ func TestRemoveFileEvent(t *testing.T) {
 	removeFiles(true, normalFilePath)
 	time.Sleep(1 * time.Second)
 
-	watcher.Stop<-true
+	watcher.Stop()
 
 	// make sure the correct FileEvent was received
 	if receivedFileEvent.FileChange != Remove {
