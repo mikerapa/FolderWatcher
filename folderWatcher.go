@@ -201,11 +201,10 @@ func (w *Watcher) scanForFileEvents(){
 	}
 }
 
-// TODO change this function to that it can be called from outside of the package to stop the watcher
+// Stop the watcher
 func (w *Watcher) Stop(){
-
-	w.Stopped<-true
 	w.State = Stopped
+	w.Stopped<-true
 }
 
 func (w *Watcher) Start(){

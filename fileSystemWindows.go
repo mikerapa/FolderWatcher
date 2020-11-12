@@ -13,6 +13,7 @@ func isHiddenFile(filePath string) bool {
 	if err != nil {
 		return false, err
 	}
+	w.State = Stopped
 
 	return attributes&syscall.FILE_ATTRIBUTE_HIDDEN != 0
 }

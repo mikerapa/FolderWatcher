@@ -33,6 +33,37 @@ func TestNew(t *testing.T) {
 
 }
 
+func TestWatcher_Stop(t *testing.T) {
+	gotStop:= false
+	watcher := New()
+	go func () {
+		for {
+			select{
+			case <- watcher.Stopped:
+				gotStop=true
+				return
+			}
+		}
+	}()
+	watcher.Start()
+
+	// Make sure the watcher is in the running state
+	if watcher.State!=Running{
+		t.Errorf("Watcher should be in the 'Running state. State=%s", watcher.State.ToString())
+	}
+
+	watcher.Stop()
+	time.Sleep(1 * time.Second)
+
+	if !gotStop{
+		t.Errorf("Calling Stop() did not send stopped message")
+	}
+	
+	if watcher.State != Stopped{
+		t.Errorf("Watcher should be in the Stopped state after the Stop() function is called. State=%s", watcher.State.ToString())
+	}
+}
+
 func TestWatcher_AddFolder(t *testing.T) {
 	tests := []struct {
 		name    string

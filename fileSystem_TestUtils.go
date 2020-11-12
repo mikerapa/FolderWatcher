@@ -24,7 +24,7 @@ func setupTestFiles(){
 
 func tearDownTestFiles(){
 	// remove test files from the test folder
-	removeFiles(true, normalFilePath, hiddenFilePath, normalFilePath2)
+	removeFiles(true, normalFilePath, hiddenFilePath, normalFilePath2, hiddenFilePath2)
 
 }
 
