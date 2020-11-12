@@ -23,7 +23,7 @@ func main() {
 					wg.Done()
 					return
 				case fe:= <- watcher.FileChanged:
-					println(fe.EventName(), fe.FilePath)
+					println(fe.FileChange.ToString(), fe.FilePath)
 			}
 		}
 	}()

@@ -1,5 +1,7 @@
 package folderWatcher
 
+import "fmt"
+
 //
 type FileEvent struct {
 	FileChange
@@ -9,30 +11,20 @@ type FileEvent struct {
 
 }
 
-// return a string representation of the event value
-func (fe *FileEvent) EventName() string {
-	switch fe.FileChange {
-	case Add:
-		return "Add"
-	case Remove:
-		return "Remove"
-	case Write:
-		return "Write"
-	case Move:
-		return "Move"
-	default:
-		return "Unknown"
-
-	}
-}
-
-
 // FileChange enumeration
 type FileChange int32
 const (
-	Add FileChange = iota
-	Remove
-	Write
-	Move
+	Add FileChange = 0
+	Remove FileChange = 1
+	Write FileChange =2
+	Move FileChange =3
 )
+
+func (fc FileChange) String() string {
+	fileChangeStrings:= [...]string{"Add", "Remove", "Write", "Move"}
+	return fileChangeStrings[fc]
+}
+
+// return a string representation of the event value
+func (fc *FileChange) ToString() string {return fmt.Sprintf("%s", fc)}
 
