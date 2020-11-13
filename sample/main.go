@@ -14,6 +14,12 @@ func main() {
 		panic(err.Error())
 	}
 
+	err = watcher.AddFolder("../testFolder/subFolder2/", true, false)
+	if err != nil {
+		panic(err.Error())
+	}
+
+
 	// collect events from the watcher
 	go func () {
 		for {
@@ -32,7 +38,7 @@ func main() {
 	wg.Add(1)
 	watcher.Start()
 	go func() {
-		time.Sleep(30 * time.Second)
+		time.Sleep(300 * time.Second)
 		println("Sending the stop message")
 		watcher.Stop()
 	}()

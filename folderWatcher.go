@@ -137,68 +137,78 @@ func (w *Watcher) RemoveFolder(path string, returnErrorIfNotFound bool) ( err er
 
 func (w *Watcher) scanForFileEvents(){
 
-	for _, requestedWatch := range w.RequestedWatches{
+	// get a refreshed list of all the files in the watched folders
+	newFileList := make(map[string]os.FileInfo)
+	for _, requestedWatch := range w.RequestedWatches {
 		// start processing by going through all of the flies in the new list
-		go func(){
 
-			newFileList, err := GetFileList(requestedWatch.Path, requestedWatch.Recursive, requestedWatch.ShowHidden)
-			if err != nil {
-				fmt.Println(err.Error())
-			}
+		fl, err := GetFileList(requestedWatch.Path, requestedWatch.Recursive, requestedWatch.ShowHidden)
+		if err != nil {
+			fmt.Println(err.Error())
+		}
 
-			movedFiles := make(map[string]string) // oldPath[newPath]
-			for newFilePath, newFile := range newFileList {
-				existingFile, isExistingFile := w.watchedFiles[newFilePath]
-				if !isExistingFile {
-					// a file in the new list of files was not found in the watchedFiles map. It could be a new file, or
-					// it could be a file which has moved.
-					// Look for existing watchedFile which match
-					matchFoundInWatchedFiles:= false
-					for path,watchedFile:= range w.watchedFiles {
-						if os.SameFile(watchedFile, newFile){
-							// a matching file was found in the watched files list. Count this as a moved file.
-							matchFoundInWatchedFiles = true
-							movedFiles[path] = newFilePath
-							w.FileChanged <- FileEvent{FileChange: Move,
-								FilePath: newFilePath,
-								PreviousPath: path,
-								Description: fmt.Sprintf("File was moved from %s to %s", path, newFilePath)}
-							w.removeWatchedFile(path)
-							w.addUpdateWatchedFile(newFilePath, newFile)
-							break
-						}
-					}
-					// The file is in the new list of files, but not the watchedFiles list and the file was not moved.
-					// Process this as a new file.
-					if !matchFoundInWatchedFiles{
-						w.addUpdateWatchedFile(newFilePath, newFile)
-						w.FileChanged<- FileEvent{FileChange:Add, FilePath: newFilePath,
-							Description: fmt.Sprintf("%s was added", newFilePath)}
-					}
-				} else {
-					// The new list and pre-existing list have a matching path.
-					// Check for file writes.
-					if newFile.ModTime() != existingFile.ModTime(){
-						w.FileChanged<-FileEvent{FileChange:Write, FilePath: newFilePath,
-						Description: fmt.Sprintf("%s updated", newFilePath)}
-						w.addUpdateWatchedFile(newFilePath, newFile)
-					}
-				}
-			}
-
-			// find deleted files
-			for path:= range w.watchedFiles{
-				_,isInNewFilesList := newFileList[path]
-				_,isMovedFile := movedFiles[path]
-				if !isInNewFilesList && ! isMovedFile{
-					w.FileChanged<- FileEvent{FileChange: Remove, FilePath: path,
-						Description: fmt.Sprintf("%s was removed", path)}
-					w.removeWatchedFile(path)
-				}
-			}
-		}()
-
+		for p,f := range fl{
+			newFileList[p] = f
+		}
 	}
+
+
+	// TODO this comparison is not working because the newFileList is a subset of the files and the watchedFiles
+	// map can contain files which are not related to this RequestedWatch.
+	movedFiles := make(map[string]string) // oldPath[newPath]
+	for newFilePath, newFile := range newFileList {
+		existingFile, isExistingFile := w.watchedFiles[newFilePath]
+		if !isExistingFile {
+			// a file in the new list of files was not found in the watchedFiles map. It could be a new file, or
+			// it could be a file which has moved.
+			// Look for existing watchedFile which match
+			matchFoundInWatchedFiles:= false
+			for path,watchedFile:= range w.watchedFiles {
+				if os.SameFile(watchedFile, newFile){
+					// a matching file was found in the watched files list. Count this as a moved file.
+					matchFoundInWatchedFiles = true
+					movedFiles[path] = newFilePath
+					w.FileChanged <- FileEvent{FileChange: Move,
+						FilePath: newFilePath,
+						PreviousPath: path,
+						Description: fmt.Sprintf("File was moved from %s to %s", path, newFilePath)}
+					w.removeWatchedFile(path)
+					w.addUpdateWatchedFile(newFilePath, newFile)
+					break
+				}
+			}
+			// The file is in the new list of files, but not the watchedFiles list and the file was not moved.
+			// Process this as a new file.
+			if !matchFoundInWatchedFiles{
+				w.addUpdateWatchedFile(newFilePath, newFile)
+				w.FileChanged<- FileEvent{FileChange:Add, FilePath: newFilePath,
+					Description: fmt.Sprintf("%s was added", newFilePath)}
+			}
+		} else {
+			// The new list and pre-existing list have a matching path.
+			// Check for file writes.
+			if newFile.ModTime() != existingFile.ModTime(){
+				w.FileChanged<-FileEvent{FileChange:Write, FilePath: newFilePath,
+				Description: fmt.Sprintf("%s updated", newFilePath)}
+				w.addUpdateWatchedFile(newFilePath, newFile)
+			}
+		}
+	}
+
+	go func() {
+		// find deleted files
+		for path:= range w.watchedFiles{
+			_,isInNewFilesList := newFileList[path]
+			_,isMovedFile := movedFiles[path]
+			if !isInNewFilesList && ! isMovedFile{
+				w.FileChanged<- FileEvent{FileChange: Remove, FilePath: path,
+					Description: fmt.Sprintf("%s was removed", path)}
+				w.removeWatchedFile(path)
+			}
+		}
+	}()
+
+
 }
 
 // Stop the watcher

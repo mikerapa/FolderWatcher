@@ -58,7 +58,7 @@ func TestWatcher_Stop(t *testing.T) {
 	if !gotStop{
 		t.Errorf("Calling Stop() did not send stopped message")
 	}
-	
+
 	if watcher.State != Stopped{
 		t.Errorf("Watcher should be in the Stopped state after the Stop() function is called. State=%s", watcher.State.ToString())
 	}
@@ -134,6 +134,59 @@ func TestWatcher_RemoveFolder(t *testing.T) {
 
 		})
 	}
+}
+
+// TODO need a test for restarting the watcher
+// TODO does the watcher work when the channel listening is before the Start func is called?
+
+
+func TestMultipleWatchRequests(t *testing.T){
+	watcher := New()
+	watcher.AddFolder("testFolder/subFolder", false, false)
+	watcher.AddFolder("testFolder/subFolder2", false, false)
+
+	var testFiles []string
+	recievedEvents := make(map[FileChange]int)
+
+	watcher.Start()
+	// collect events from the watcher
+	go func () {
+		for {
+			select{
+			case <- watcher.Stopped:
+				return
+			case evnt:= <- watcher.FileChanged:
+				recievedEvents[evnt.FileChange] = recievedEvents[evnt.FileChange]+1
+			}
+		}
+	}()
+
+	time.Sleep(1 * time.Second)
+	testFiles = append(testFiles,
+		randomizedFilePath("testFolder/subFolder/file#.txt"),
+		randomizedFilePath("testFolder/subFolder2/file#.txt"))
+
+	// create, update and delete each of the files
+	for _,fp := range testFiles {
+		writeToFile(fp, "stuff")
+		time.Sleep(1 * time.Second)
+		writeToFile(fp, "updated stuff")
+		time.Sleep(1 * time.Second)
+	}
+
+	removeFiles(false, testFiles...)
+
+	time.Sleep(1 * time.Second)
+	// make sure the correct number of events were received
+	var eventType FileChange
+	for _, eventType= range []FileChange{Add, Remove, Write}{
+		if recievedEvents[eventType]!=2{
+			t.Errorf("should have received 2 %s events, got %d", FileChange(eventType), recievedEvents[eventType] )
+		}
+	}
+
+	watcher.Stop()
+
 }
 
 func TestAddFileEvent(t *testing.T) {
