@@ -153,8 +153,7 @@ func (w *Watcher) scanForFileEvents(){
 	}
 
 
-	// TODO this comparison is not working because the newFileList is a subset of the files and the watchedFiles
-	// map can contain files which are not related to this RequestedWatch.
+	// Compare the watchedFiles map with the newly refreshed list
 	movedFiles := make(map[string]string) // oldPath[newPath]
 	for newFilePath, newFile := range newFileList {
 		existingFile, isExistingFile := w.watchedFiles[newFilePath]
@@ -218,6 +217,7 @@ func (w *Watcher) Stop(){
 }
 
 func (w *Watcher) Start(){
+	// TODO protect from starting more than once
 	intervalChan := make(chan bool)
 	w.State = Running
 	// Service loop

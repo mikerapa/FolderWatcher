@@ -136,9 +136,59 @@ func TestWatcher_RemoveFolder(t *testing.T) {
 	}
 }
 
-// TODO need a test for restarting the watcher
 // TODO does the watcher work when the channel listening is before the Start func is called?
 
+
+func TestRestartWatcher(t *testing.T) {
+	watcher := New()
+	watcher.AddFolder("testFolder/subFolder", false, false)
+
+	var testFiles []string
+	recievedEvents := make(map[FileChange]int)
+
+
+	// set up the test file paths
+	testFiles = append(testFiles,
+		randomizedFilePath("testFolder/subFolder/file#.txt"),
+		randomizedFilePath("testFolder/subFolder/file#.txt"))
+
+
+	// create and update each of the files
+	for _,fp := range testFiles {
+
+
+		// collect events from the watcher
+		go func () {
+			for {
+				select{
+				case <- watcher.Stopped:
+					return
+				case evnt:= <- watcher.FileChanged:
+					recievedEvents[evnt.FileChange] = recievedEvents[evnt.FileChange]+1
+				}
+			}
+		}()
+		watcher.Start()
+
+		time.Sleep(1 * time.Second)
+		writeToFile(fp, "stuff")
+		time.Sleep(1 * time.Second)
+		writeToFile(fp, "updated stuff")
+		time.Sleep(1 * time.Second)
+		watcher.Stop()
+		time.Sleep(1 * time.Second)
+	}
+
+	// make sure the correct number of events were received
+	var eventType FileChange
+	for _, eventType= range []FileChange{Add, Write}{
+		if recievedEvents[eventType]!=2{
+			t.Errorf("should have received 2 %s events, got %d", FileChange(eventType), recievedEvents[eventType] )
+		}
+	}
+
+	removeFiles(false, testFiles...)
+}
 
 func TestMultipleWatchRequests(t *testing.T){
 	watcher := New()
