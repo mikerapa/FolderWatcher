@@ -217,8 +217,11 @@ func (w *Watcher) Stop(){
 }
 
 func (w *Watcher) Start(){
-	// TODO protect from starting more than once
-	intervalChan := make(chan bool)
+	if w.State == Running{
+		// If STart is called when the service is already running, do not start another service loop
+		return
+	}
+
 	w.State = Running
 	// Service loop
 	go func(){
@@ -230,22 +233,12 @@ func (w *Watcher) Start(){
 				break
 			}
 
-			intervalChan<-true
+			w.scanForFileEvents()
 		}
 
 	}()
 
-	// event loop
-	go func(){
-		for {
-			select {
 
-				case <- intervalChan:
-					w.scanForFileEvents()
-			}
-		}
-
-	}()
 
 
 }

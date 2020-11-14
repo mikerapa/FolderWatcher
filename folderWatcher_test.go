@@ -138,6 +138,49 @@ func TestWatcher_RemoveFolder(t *testing.T) {
 
 // TODO does the watcher work when the channel listening is before the Start func is called?
 
+func TestStartTwice(t *testing.T){
+	watcher := New()
+	watcher.AddFolder("testFolder/subFolder", false, false)
+
+	var recievedEventCount int = 0
+
+
+	// set up the test file paths
+	testFiles := []string {
+		randomizedFilePath("testFolder/subFolder/file#.txt"),
+		randomizedFilePath("testFolder/subFolder/file#.txt"),
+	}
+
+	// collect events from the watcher
+	go func () {
+		for {
+			select{
+			case <- watcher.Stopped:
+				return
+			case evnt:= <- watcher.FileChanged:
+				if evnt.FileChange == Add{
+					recievedEventCount++
+				}
+			}
+		}
+	}()
+	watcher.Start()
+	watcher.Start()
+
+	time.Sleep(1 * time.Second)
+	// create each of the files
+	for _,fp := range testFiles {
+		writeToFile(fp, "stuff")
+		time.Sleep(2 * time.Second)
+	}
+
+	// make sure the correct number of adds were received
+	if len(testFiles) != recievedEventCount{
+		t.Errorf("should have received %d Add events, got %d", len(testFiles), recievedEventCount)
+	}
+	watcher.Stop()
+	removeFiles(false, testFiles...)
+}
 
 func TestRestartWatcher(t *testing.T) {
 	watcher := New()
