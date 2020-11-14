@@ -43,7 +43,7 @@ type Watcher struct {
 	watchedFiles map[string]os.FileInfo
 	Stopped chan bool
 	FileChanged chan FileEvent
-	watchedFileMutex sync.Mutex
+	watchedFileMutex *sync.Mutex
 	State WatcherState
 }
 
@@ -54,7 +54,7 @@ func New() Watcher {
 		watchedFiles: make(map[string]os.FileInfo),
 		Stopped: make(chan bool),
 		FileChanged: make(chan FileEvent),
-		watchedFileMutex: sync.Mutex{},
+		watchedFileMutex: &sync.Mutex{},
 		State: NotStarted,
 	}
 
