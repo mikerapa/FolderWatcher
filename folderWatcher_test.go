@@ -130,8 +130,6 @@ func TestWatcher_RemoveFolder(t *testing.T) {
 				t.Errorf("the RequestedWatches list should be empty")
 			}
 
-			// TODO make sure only the files related to this watched folder are removed from the watchedFiles map
-
 			// make sure the files are removed from the watchedFiles list
 			if tt.shouldRemoveFolder && len(watcher.watchedFiles)!=0{
 				t.Errorf("%s RemoveFolder() after removing path, there should be 0 files watched.", tt.name)
@@ -139,6 +137,75 @@ func TestWatcher_RemoveFolder(t *testing.T) {
 
 		})
 	}
+}
+
+func TestWatcher_MultipleFolderRemove(t *testing.T) {
+	// this test should cover situation in which there are multiple folders requested for watch and one is removed.
+
+	// set up the test file paths
+	testFiles := []string {
+		randomizedFilePath("testFolder/subFolder/file#.txt"),
+		randomizedFilePath("testFolder/subFolder/file#.txt"),
+		randomizedFilePath("testFolder/subFolder2/file#.txt"),
+		randomizedFilePath("testFolder/subFolder2/file#.txt"),
+	}
+
+	// create files
+	for _, p := range testFiles{
+		writeToFile(p, "some stuff")
+	}
+
+	// set up the watcher
+	watcher := New()
+	_ = watcher.AddFolder("testFolder/subFolder", false, false)
+	_ = watcher.AddFolder("testFolder/subFolder2", false, false)
+
+	// get data from channels
+	go func() {
+		for {
+			select {
+				case <- watcher.FileChanged:
+					// No need to do anything with the event for this test
+				case <- watcher.Stopped:
+					return
+			}
+		}
+	}()
+
+	// start the watcher and wait for a cycle to complete
+	watcher.Start()
+	defer watcher.Stop()
+	defer removeFiles(false, testFiles...)
+	time.Sleep(1 * time.Second)
+
+	// there should be 4 files watched
+	if len(watcher.watchedFiles)!=4{
+		t.Errorf("Watcher is not watching the correct number of files. Want 4, got %d", len(watcher.watchedFiles))
+	}
+
+	// remove a folder and there should be 2 files watched
+	err := watcher.RemoveFolder("testFolder/subFolder2", true )
+	if err!=nil {
+		// if there's an error returned from RemoveFolder, the test should fail
+		t.Error(err.Error())
+	}
+
+	if len(watcher.watchedFiles) != 2{
+		t.Errorf("Watcher is not watching the correct number of files. Want 2, got %d", len(watcher.watchedFiles))
+	}
+
+
+	// Remove the one remaining folder and there should be no files watched
+	err = watcher.RemoveFolder("testFolder/subFolder", true )
+	if err!=nil {
+		// if there's an error returned from RemoveFolder, the test should fail
+		t.Error(err.Error())
+	}
+
+	if len(watcher.watchedFiles) != 0{
+		t.Errorf("Watcher is not watching the correct number of files. Want 0, got %d", len(watcher.watchedFiles))
+	}
+
 }
 
 func TestStartTwice(t *testing.T){
@@ -162,8 +229,8 @@ func TestStartTwice(t *testing.T){
 			select{
 			case <- watcher.Stopped:
 				return
-			case evnt:= <- watcher.FileChanged:
-				if evnt.FileChange == Add{
+			case newFileEvent := <- watcher.FileChanged:
+				if newFileEvent.FileChange == Add{
 					receivedEventCount++
 				}
 			}
@@ -281,7 +348,7 @@ func TestMultipleWatchRequests(t *testing.T){
 	var eventType FileChange
 	for _, eventType= range []FileChange{Add, Remove, Write}{
 		if receivedEvents[eventType]!=len(testFiles){
-			t.Errorf("should have received %d %s events, got %d", len(testFiles), FileChange(eventType), receivedEvents[eventType] )
+			t.Errorf("should have received %d %s events, got %d", len(testFiles), eventType, receivedEvents[eventType] )
 		}
 	}
 
