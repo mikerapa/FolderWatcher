@@ -75,12 +75,15 @@ func (w *Watcher) addUpdateWatchedFile(filepath string, file os.FileInfo){
 	w.watchedFileMutex.Unlock()
 }
 
+// TODO should this be lower case?
 func CalculateInterval(watchedFileCount int) int{
 	weightedInt := float64(watchedFileCount) * .5
 	// enforce min and max
 	return int(math.Min(math.Max(MinimumIntervalTime, weightedInt), MaximumIntervalTime))
 }
 
+
+// TODO should this be lower case?
 func (w *Watcher) UpdateInterval(){
 	w.Interval = CalculateInterval(len(w.watchedFiles))
 }
@@ -188,7 +191,7 @@ func (w *Watcher) scanForFileEvents(){
 			// Check for file writes.
 			if newFile.ModTime() != existingFile.ModTime(){
 				w.FileChanged<-FileEvent{FileChange:Write, FilePath: newFilePath,
-				Description: fmt.Sprintf("%s updated", newFilePath)}
+				Description: fmt.Sprintf("%s was updated", newFilePath)}
 				w.addUpdateWatchedFile(newFilePath, newFile)
 			}
 		}

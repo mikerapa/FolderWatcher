@@ -130,6 +130,8 @@ func TestWatcher_RemoveFolder(t *testing.T) {
 				t.Errorf("the RequestedWatches list should be empty")
 			}
 
+			// TODO make sure only the files related to this watched folder are removed from the watchedFiles map
+
 			// make sure the files are removed from the watchedFiles list
 			if tt.shouldRemoveFolder && len(watcher.watchedFiles)!=0{
 				t.Errorf("%s RemoveFolder() after removing path, there should be 0 files watched.", tt.name)
