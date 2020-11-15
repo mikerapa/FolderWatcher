@@ -75,17 +75,16 @@ func (w *Watcher) addUpdateWatchedFile(filepath string, file os.FileInfo){
 	w.watchedFileMutex.Unlock()
 }
 
-// TODO should this be lower case?
-func CalculateInterval(watchedFileCount int) int{
+
+func calculateInterval(watchedFileCount int) int{
 	weightedInt := float64(watchedFileCount) * .5
 	// enforce min and max
 	return int(math.Min(math.Max(MinimumIntervalTime, weightedInt), MaximumIntervalTime))
 }
 
 
-// TODO should this be lower case?
-func (w *Watcher) UpdateInterval(){
-	w.Interval = CalculateInterval(len(w.watchedFiles))
+func (w *Watcher) updateInterval(){
+	w.Interval = calculateInterval(len(w.watchedFiles))
 }
 
 func (w *Watcher) AddFolder(path string, recursive bool, showHidden bool) (err error){
@@ -107,7 +106,7 @@ func (w *Watcher) AddFolder(path string, recursive bool, showHidden bool) (err e
 	for p, file := range newFilesToWatch{
 		w.addUpdateWatchedFile(p, file)
 	}
-	w.UpdateInterval()
+	w.updateInterval()
 	return
 }
 
@@ -134,7 +133,7 @@ func (w *Watcher) RemoveFolder(path string, returnErrorIfNotFound bool) ( err er
 		w.removeWatchedFile(p)
 	}
 	delete(w.RequestedWatches, path)
-	w.UpdateInterval()
+	w.updateInterval()
 	return
 }
 

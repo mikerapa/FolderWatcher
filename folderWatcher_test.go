@@ -516,9 +516,9 @@ func TestCalculateInterval(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			calculatedValue :=  CalculateInterval(tt.watchedFileCount)
+			calculatedValue :=  calculateInterval(tt.watchedFileCount)
 			if calculatedValue< MinimumIntervalTime || calculatedValue > MaximumIntervalTime{
-				t.Errorf("CalculateInterval() = %v is out of range. Min:%v, Max:%v", calculatedValue, MinimumIntervalTime, MaximumIntervalTime)
+				t.Errorf("calculateInterval() = %v is out of range. Min:%v, Max:%v", calculatedValue, MinimumIntervalTime, MaximumIntervalTime)
 			}
 		})
 	}
