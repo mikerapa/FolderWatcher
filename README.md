@@ -20,14 +20,14 @@ Use the New() function to get a new instance of the FolderWatcher.
 
 `	watcher := folderWatcher.New()`
    
-The AddFolder function is used to give the FolderWatcher a path to watch. If the path is invalid and error will be returned.
+Use the AddFolder function to provide a new folder path. If the path is invalid an error will be returned.
    
    ` err := watcher.AddFolder("../testFolder", true, false)`
    
 ### Collect FileEvents from the FileChanged channel
-When the FolderWatcher is running, messages are sent through the following channels.
-1. Stopped Channel - FolderWatcher will send a `true` to this channel when the watcher is stopped. 
-2. FileChanged - All file events are passed through this channel. 
+When the FolderWatcher is running, it sends data through following channels:
+1. Stopped Channel - FolderWatcher will send a `true` to this channel when the WatcherState changes to `Stopped`.  
+2. FileChanged - FolderWatcher passes file events through this channel. 
 
 
 ```	
@@ -49,7 +49,7 @@ go func () {
 Use the `watcher.Start()` function to start an instance of the watcher. You must have something to receive data on the 
 channels before starting the watcher, otherwise you'll likely get an error related to deadlocks. 
 
-Call `watcher.Stop()` to stop the watcher. Note that stopping the watcher does not removes the list of folders currently 
+Call `watcher.Stop()` to stop the watcher. Note that stopping the watcher does not remove the list of folders currently 
 being watched. 
 
 ## Examples 
@@ -60,15 +60,15 @@ TODO include a reference to the full application here.
 ## FolderWatcher Struct
 
 #### Interval (int)
-This is the rate at which the file system is polled for changes. The FolderWatcher is setting this value 
+This is the rate at which the FolderWatcher polls the file system for changes. The FolderWatcher is setting this value 
 automatically based on the number of files currently being watched. The value should be an integer between 500 and 5000
 and this value is the number of milliseconds the watcher will wait before starting another cycle. 
 
 #### Stopped Channel (chan bool)
-FolderWatcher will send a `true` to this channel when the watcher is stopped. 
+FolderWatcher will send a `true` to this channel when the WatcherState changes to `Stopped`. 
 
 #### FileChanged (chan bool)
-All file events are passed through this channel. 
+The FolderWatcher passes file events through this channel. 
 
 #### WatcherState (int)
 
@@ -85,7 +85,7 @@ Map containing all watched folders. The key is the folder path.
 
 `func New() Watcher `
 
-Creates and returns a new instance of a FolderWatcher with all of the default settings.
+Creates and returns a new instance of a FolderWatcher with default settings.
 
 Input Parameters
 
@@ -198,4 +198,4 @@ A string representing the file change. See examples below.
  - [ ] Pause - ability to temporarily discontinue file events, but not stop the watcher
  - [ ] Clear - remove all watched folders and watched files
  - [ ] Override Interval - the cycle interval (rate at which the file system is polled for changes) is automatically set based 
- on the number of files being watched. There is no feature to everride that value. 
+ on the number of files being watched. There is no feature to override that value. 
