@@ -1,7 +1,7 @@
 package main
 
 import (
-	"FolderWatcher"
+	"github.com/mikerapa/FolderWatcher"
 	"sync"
 	"time"
 )

@@ -29,6 +29,10 @@ func IsValidPath(path string) bool {
 	return !os.IsNotExist(err)
 }
 
+func AbsPath(path string) (absPath string) {
+	absPath, _ = filepath.Abs(path)
+	return
+}
 
 func GetFileList(folderPath string, recursive bool, showHidden bool) (fileList map[string]os.FileInfo, err error){
 	// make sure the path provided is valid
@@ -39,6 +43,10 @@ func GetFileList(folderPath string, recursive bool, showHidden bool) (fileList m
 	fileList = make(map[string]os.FileInfo)
 
 	err = filepath.Walk(folderPath, func(filePath string, fileInfo os.FileInfo, err error) error{
+		if err != nil{
+			println(err.Error())
+		}
+
 		// check if the file is hidden before adding it
 		if !fileInfo.IsDir() && (showHidden || !isHiddenFile(filePath)) && (recursive || filepath.Dir(filePath) == folderPath) {
 			fileList[filePath] = fileInfo

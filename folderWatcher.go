@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math"
 	"os"
+	"path/filepath"
 	"sync"
 	"time"
 )
@@ -88,6 +89,7 @@ func (w *Watcher) updateInterval(){
 }
 
 func (w *Watcher) AddFolder(path string, recursive bool, showHidden bool) (err error){
+	path, err  = filepath.Abs(path)
 	// check that the path is valid, return error if it's not
 	if !IsValidPath(path){
 		err = errors.New(fmt.Sprintf("%s is not a valid path", path))
@@ -111,6 +113,7 @@ func (w *Watcher) AddFolder(path string, recursive bool, showHidden bool) (err e
 }
 
 func (w *Watcher) RemoveFolder(path string, returnErrorIfNotFound bool) ( err error){
+	path, err = filepath.Abs(path)
 	if _, found := w.RequestedWatches[path]; !found{
 		// the path was not in the collection
 		if returnErrorIfNotFound {
@@ -154,7 +157,6 @@ func (w *Watcher) scanForFileEvents(){
 		}
 	}
 
-
 	// Compare the watchedFiles map with the newly refreshed list
 	movedFiles := make(map[string]string) // oldPath[newPath]
 	for newFilePath, newFile := range newFileList {
@@ -172,7 +174,7 @@ func (w *Watcher) scanForFileEvents(){
 					w.FileChanged <- FileEvent{FileChange: Move,
 						FilePath: newFilePath,
 						PreviousPath: path,
-						Description: fmt.Sprintf("File was moved from %s to %s", path, newFilePath)}
+						Description: fmt.Sprintf("%s move to %s", path, newFilePath)}
 					w.removeWatchedFile(path)
 					w.addUpdateWatchedFile(newFilePath, newFile)
 					break
@@ -183,14 +185,14 @@ func (w *Watcher) scanForFileEvents(){
 			if !matchFoundInWatchedFiles{
 				w.addUpdateWatchedFile(newFilePath, newFile)
 				w.FileChanged<- FileEvent{FileChange:Add, FilePath: newFilePath,
-					Description: fmt.Sprintf("%s was added", newFilePath)}
+					Description: fmt.Sprintf("%s created", newFilePath)}
 			}
 		} else {
 			// The new list and pre-existing list have a matching path.
 			// Check for file writes.
 			if newFile.ModTime() != existingFile.ModTime(){
 				w.FileChanged<-FileEvent{FileChange:Write, FilePath: newFilePath,
-				Description: fmt.Sprintf("%s was updated", newFilePath)}
+				Description: fmt.Sprintf("%s updated", newFilePath)}
 				w.addUpdateWatchedFile(newFilePath, newFile)
 			}
 		}
@@ -203,7 +205,7 @@ func (w *Watcher) scanForFileEvents(){
 			_,isMovedFile := movedFiles[path]
 			if !isInNewFilesList && ! isMovedFile{
 				w.FileChanged<- FileEvent{FileChange: Remove, FilePath: path,
-					Description: fmt.Sprintf("%s was removed", path)}
+					Description: fmt.Sprintf("%s deleted", path)}
 				w.removeWatchedFile(path)
 			}
 		}

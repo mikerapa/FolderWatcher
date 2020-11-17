@@ -2,6 +2,7 @@ package folderWatcher
 
 import (
 	"math"
+	"path/filepath"
 	"strings"
 	"testing"
 	"time"
@@ -360,7 +361,7 @@ func TestAddFileEvent(t *testing.T) {
 	watcher := New()
 	_ = watcher.AddFolder("testFolder", false, false)
 	var receivedFileEvent FileEvent
-	watcher.Start()
+
 	// collect events from the watcher
 	go func () {
 		for {
@@ -372,6 +373,8 @@ func TestAddFileEvent(t *testing.T) {
 		}
 	}()
 
+	watcher.Start()
+	time.Sleep(1 * time.Second)
 	writeToFile(normalFilePath, "nothing")
 	defer removeFiles(true, normalFilePath)
 
@@ -384,12 +387,13 @@ func TestAddFileEvent(t *testing.T) {
 	}
 
 	// make sure the path was included in the FileEvent
-	if receivedFileEvent.FilePath != normalFilePath{
+	absNormalFilePath , _ := filepath.Abs(normalFilePath)
+	if receivedFileEvent.FilePath != absNormalFilePath{
 		t.Errorf("Filepath was not included in the FileEvent")
 	}
 
 	// make sure the new file is in the watchedFiles
-	_, fileFound := watcher.watchedFiles[normalFilePath]
+	_, fileFound := watcher.watchedFiles[absNormalFilePath]
 	if !fileFound{
 		t.Errorf("%s should have been added to the watched files", normalFilePath)
 	}
@@ -436,11 +440,11 @@ func TestMoveFileEvent(t *testing.T) {
 	}
 
 	// make sure the path and previous path are included in the FileEvent
-	if receivedFileEvent.FilePath != normalFilePath2{
-		t.Errorf("Filepath is not correct in FileEvent. Wanted %s, got %s", normalFilePath2, receivedFileEvent.FilePath)
+	if receivedFileEvent.FilePath != AbsPath(normalFilePath2){
+		t.Errorf("Filepath is not correct in FileEvent. Wanted %s, got %s", AbsPath(normalFilePath2), receivedFileEvent.FilePath)
 	}
-	if receivedFileEvent.PreviousPath!=normalFilePath{
-		t.Errorf("FileEvent should have PreviousPath value set for a Move event. Wanted '%s', got '%s'", normalFilePath2, receivedFileEvent.PreviousPath)
+	if receivedFileEvent.PreviousPath!=AbsPath(normalFilePath){
+		t.Errorf("FileEvent should have PreviousPath value set for a Move event. Wanted '%s', got '%s'", AbsPath(normalFilePath2), receivedFileEvent.PreviousPath)
 	}
 
 	// Make sure the description is set
@@ -449,7 +453,7 @@ func TestMoveFileEvent(t *testing.T) {
 	}
 
 	// Make sure the new path is in the watchedFiles map
-	_, fileFound := watcher.watchedFiles[normalFilePath2]
+	_, fileFound := watcher.watchedFiles[AbsPath(normalFilePath2)]
 	if !fileFound{
 		t.Errorf("file %s should be in the list of watched files", normalFilePath)
 	}
@@ -465,7 +469,8 @@ func TestWriteFileEvent(t *testing.T) {
 	_= watcher.AddFolder("testFolder", false, false)
 
 	// get the mod time for the newly created file. This will be used to for a comparison.
-	testFile,_ :=watcher.watchedFiles[normalFilePath]
+	absNormalFilePath, _ := filepath.Abs(normalFilePath)
+	testFile,_ :=watcher.watchedFiles[absNormalFilePath]
 	initialModTime := testFile.ModTime()
 
 	defer removeFiles(true, normalFilePath)
@@ -497,12 +502,12 @@ func TestWriteFileEvent(t *testing.T) {
 	}
 
 	// make sure the path is included in the FileEvent
-	if receivedFileEvent.FilePath != normalFilePath{
+	if receivedFileEvent.FilePath != absNormalFilePath{
 		t.Errorf("Filepath was not included in the FileEvent")
 	}
 
 	// make sure the updated file remains in the watched files list
-	newWatchedFile, fileFound := watcher.watchedFiles[normalFilePath]
+	newWatchedFile, fileFound := watcher.watchedFiles[absNormalFilePath]
 	if !fileFound{
 		t.Errorf("file %s should have remained in the list of watched files", normalFilePath)
 	}
@@ -556,7 +561,7 @@ func TestRemoveFileEvent(t *testing.T) {
 	}
 
 	// make sure the path is included in the FileEvent
-	if receivedFileEvent.FilePath != normalFilePath{
+	if receivedFileEvent.FilePath != AbsPath(normalFilePath){
 		t.Errorf("Filepath was not included in the FileEvent")
 	}
 
