@@ -1,7 +1,8 @@
 # Folder Watcher
 
 ## Overview
-FolderWatcher is a Go library for tracking file events in specified folders. 
+FolderWatcher is a Go library for tracking file events in specified folders. If you are looking for a command 
+line application for tracking file changes, see https://github.com/mikerapa/GoFileWatcher. 
 
 Supported file events
 - Add - creation of a new file in a watched folder
@@ -13,7 +14,7 @@ Supported file events
 ## Getting started
 
 ### Import Folder Watcher 
-`need a code snippet here`
+`import ("github.com/mikerapa/FolderWatcher")`
 
 ### Create a FolderWatcher instance 
 Use the New() function to get a new instance of the FolderWatcher. 
@@ -55,7 +56,7 @@ being watched.
 ## Examples 
 See sample/main.go for a basic working example. 
 
-TODO include a reference to the full application here. 
+There is a full application built with this library here: https://github.com/mikerapa/GoFileWatcher.
 
 ## FolderWatcher Struct
 
@@ -87,9 +88,7 @@ Map containing all watched folders. The key is the folder path.
 
 Creates and returns a new instance of a FolderWatcher with default settings.
 
-Input Parameters
-
-None
+Input Parameters: None
 
 Return Values
 
