@@ -380,10 +380,7 @@ func TestAddFileEvent(t *testing.T) {
 	}
 
 	// make sure the new file is in the watchedFiles
-	_, fileFound := watcher.watchedFiles[absTestFilePath]
-	if !fileFound{
-		t.Errorf("%s should have been added to the watched files", newTestFiles[0])
-	}
+	assertFileInMap(t, watcher.watchedFiles, absTestFilePath)
 
 	// Make sure the description is set
 	if !strings.Contains(receivedFileEvent.Description, receivedFileEvent.FilePath){

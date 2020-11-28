@@ -10,12 +10,7 @@ import (
 	"strings"
 	)
 
-//const(
-//	normalFilePath = "testFolder/testFile.txt"
-//	hiddenFilePath = "testFolder/.hiddenTestFile.txt"
-//	normalFilePath2 = "testFolder/subFolder/testFile2.txt"
-//	hiddenFilePath2= "testFolder/subFolder/.hiddenTestFile2.txt"
-//)
+
 
 const (
 	testFolderPath = "testFolder")
@@ -26,15 +21,6 @@ var(
 )
 
 
-
-//func setupTestFiles(){
-//	// set up the test folder
-//	writeToFile(normalFilePath, "nothing")
-//	writeToFile(hiddenFilePath, "empty file")
-//	writeToFile(normalFilePath2, "nothing")
-//	writeToFile(hiddenFilePath2, "empty file")
-//
-//}
 
 func createTestFiles(folderPath string, count int) (fileList []string){
 	filePathTemplate := filepath.Join(folderPath, "testfile#.txt")
@@ -75,12 +61,6 @@ func randomizedFilePath(pathTemplate string) string {
 	return fmt.Sprintf(pathTemplate, rand.Intn(1000))
 }
 
-
-//func tearDownTestFiles(){
-//	// remove test files from the test folder
-//	removeFiles(true, normalFilePath, hiddenFilePath, normalFilePath2, hiddenFilePath2)
-//
-//}
 
 func closeFiles(files ...*os.File){
 	for _, file:= range files{
