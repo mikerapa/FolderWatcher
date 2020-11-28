@@ -2,13 +2,24 @@ package folderWatcher
 
 import (
 	"math"
+	"math/rand"
+	"os"
+	"path"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 	"time"
 )
 
-
+// TODO seems like this is not getting called
+func TestMain(m *testing.M) {
+	rand.Seed(time.Now().UnixNano())
+	println("In TestMain")
+	code := m.Run()
+	// TODO should do some file clean up here?
+	os.Exit(code)
+}
 
 // Make sure the New function returns a valid watcher
 func TestNew(t *testing.T) {
@@ -75,11 +86,12 @@ func TestWatcher_AddFolder(t *testing.T) {
 		wantErr bool
 	}{
 		{name: "add a bad path", path: "whehrkh", recursive: false, showHidden:false, wantAdd: false, wantErr: true},
-		{name: "add a valid path", path: "testFolder", recursive: false, showHidden:false, wantAdd: true, wantErr: false},
+		{name: "add a valid path", path: testFolderPath, recursive: false, showHidden:false, wantAdd: true, wantErr: false},
 	}
 	// populate the test folder with test files
-	setupTestFiles()
-	defer tearDownTestFiles()
+	fileList:= createTestFiles(testFolderPath,1)
+	defer removeFiles(false, fileList...)
+
 	for _, tt := range tests {
 		watcher := New()
 		t.Run(tt.name, func(t *testing.T) {
@@ -108,11 +120,13 @@ func TestWatcher_RemoveFolder(t *testing.T) {
 	}{
 		{name:"folder not in the list and do not return error", path:"dummypath", returnErrorIfNotFound: false, shouldRemoveFolder: false},
 		{name: "folder not in the list and return error", path: "dummypath", returnErrorIfNotFound: true, shouldRemoveFolder: false},
-		{name: "folder path in the list", path:"testFolder", returnErrorIfNotFound: false, shouldRemoveFolder: true},
+		{name: "folder path in the list", path:testFolderPath, returnErrorIfNotFound: false, shouldRemoveFolder: true},
 	}
+
 	// populate the test folder with test files
-	setupTestFiles()
-	defer tearDownTestFiles()
+	fileList:= createTestFiles(testFolderPath,1)
+	defer removeFiles(false, fileList...)
+
 	for _, tt := range tests {
 		watcher := New()
 		err:=watcher.AddFolder("testFolder", true, false)
@@ -143,23 +157,14 @@ func TestWatcher_RemoveFolder(t *testing.T) {
 func TestWatcher_MultipleFolderRemove(t *testing.T) {
 	// this test should cover situation in which there are multiple folders requested for watch and one is removed.
 
-	// set up the test file paths
-	testFiles := []string {
-		randomizedFilePath("testFolder/subFolder/file#.txt"),
-		randomizedFilePath("testFolder/subFolder/file#.txt"),
-		randomizedFilePath("testFolder/subFolder2/file#.txt"),
-		randomizedFilePath("testFolder/subFolder2/file#.txt"),
-	}
+	// create some files in the subfolders
+	testFiles := append(createTestFiles(testSubFolder, 2), createTestFiles(testSubFolder2, 2)...)
 
-	// create files
-	for _, p := range testFiles{
-		writeToFile(p, "some stuff")
-	}
 
 	// set up the watcher
 	watcher := New()
-	_ = watcher.AddFolder("testFolder/subFolder", false, false)
-	_ = watcher.AddFolder("testFolder/subFolder2", false, false)
+	_ = watcher.AddFolder(testSubFolder, false, false)
+	_ = watcher.AddFolder(testSubFolder2, false, false)
 
 	// get data from channels
 	go func() {
@@ -185,7 +190,7 @@ func TestWatcher_MultipleFolderRemove(t *testing.T) {
 	}
 
 	// remove a folder and there should be 2 files watched
-	err := watcher.RemoveFolder("testFolder/subFolder2", true )
+	err := watcher.RemoveFolder(testSubFolder2, true )
 	if err!=nil {
 		// if there's an error returned from RemoveFolder, the test should fail
 		t.Error(err.Error())
@@ -197,7 +202,7 @@ func TestWatcher_MultipleFolderRemove(t *testing.T) {
 
 
 	// Remove the one remaining folder and there should be no files watched
-	err = watcher.RemoveFolder("testFolder/subFolder", true )
+	err = watcher.RemoveFolder(testSubFolder, true )
 	if err!=nil {
 		// if there's an error returned from RemoveFolder, the test should fail
 		t.Error(err.Error())
@@ -209,20 +214,15 @@ func TestWatcher_MultipleFolderRemove(t *testing.T) {
 
 }
 
+// Test to make sure the watcher cannot be started more than once.
 func TestStartTwice(t *testing.T){
 	watcher := New()
-	err:= watcher.AddFolder("testFolder/subFolder", false, false)
+	err:= watcher.AddFolder(testSubFolder, false, false)
 	if err!=nil{
 		t.Error(err.Error())
 	}
 	var receivedEventCount = 0
-
-
-	// set up the test file paths
-	testFiles := []string {
-		randomizedFilePath("testFolder/subFolder/file#.txt"),
-		randomizedFilePath("testFolder/subFolder/file#.txt"),
-	}
+	const testFileCount = 2
 
 	// collect events from the watcher
 	go func () {
@@ -238,15 +238,10 @@ func TestStartTwice(t *testing.T){
 		}
 	}()
 	watcher.Start()
-	watcher.Start()
+	watcher.Start() // attempt to start the watcher again
 
+	testFiles := createTestFiles(testSubFolder, testFileCount)
 	time.Sleep(1 * time.Second)
-	// create each of the files
-	for _,fp := range testFiles {
-		writeToFile(fp, "stuff")
-		time.Sleep(2 * time.Second)
-	}
-
 	// make sure the correct number of adds were received
 	if len(testFiles) != receivedEventCount {
 		t.Errorf("should have received %d Add events, got %d", len(testFiles), receivedEventCount)
@@ -255,48 +250,45 @@ func TestStartTwice(t *testing.T){
 	removeFiles(false, testFiles...)
 }
 
+// Test stopping and restarting the watcher
 func TestRestartWatcher(t *testing.T) {
+	var testFiles  []string
+	defer removeFiles(false, testFiles...)
+
+	const iterations =3
 	watcher := New()
-	err := watcher.AddFolder("testFolder/subFolder", false, false)
+	err := watcher.AddFolder(testSubFolder, false, false)
 	if err!=nil{
 		t.Error(err.Error())
 	}
 
-
+	// collect events from the watcher
 	receivedEvents := make(map[FileChange]int)
-
-	// set up the test file paths
-	testFiles := []string{
-		randomizedFilePath("testFolder/subFolder/file#.txt"),
-		randomizedFilePath("testFolder/subFolder/file#.txt")}
+	go func () {
+		for {
+			select{
+			case <- watcher.Stopped:
+			case event:= <- watcher.FileChanged:
+				// keep record of each event received
+				receivedEvents[event.FileChange] = receivedEvents[event.FileChange]+1
+			}
+		}
+	}()
 
 
 	// create and update each of the files
-	for _,fp := range testFiles {
-
-
-		// collect events from the watcher
-		go func () {
-			for {
-				select{
-				case <- watcher.Stopped:
-					return
-				case evnt:= <- watcher.FileChanged:
-					// keep record of each event received
-					receivedEvents[evnt.FileChange] = receivedEvents[evnt.FileChange]+1
-				}
-			}
-		}()
+	for i:=0; i<iterations; i++{
 		watcher.Start()
-
 		time.Sleep(1 * time.Second)
-		writeToFile(fp, "stuff")
+		newFiles := createTestFiles(testSubFolder, 1)
+		testFiles = append(testFiles, newFiles[0])
 		time.Sleep(1 * time.Second)
-		writeToFile(fp, "updated stuff")
+		writeToFile(newFiles[0], "new data")
 		time.Sleep(1 * time.Second)
 		watcher.Stop()
 		time.Sleep(1 * time.Second)
 	}
+
 
 	// make sure the correct number of events were received
 	var eventType FileChange
@@ -306,13 +298,13 @@ func TestRestartWatcher(t *testing.T) {
 		}
 	}
 
-	removeFiles(false, testFiles...)
 }
 
+// Test the watcher with two folders requested
 func TestMultipleWatchRequests(t *testing.T){
 	watcher := New()
-	_ = watcher.AddFolder("testFolder/subFolder", false, false)
-	_ = watcher.AddFolder("testFolder/subFolder2", false, false)
+	_ = watcher.AddFolder(testSubFolder, false, false)
+	_ = watcher.AddFolder(testSubFolder2, false, false)
 
 	receivedEvents := make(map[FileChange]int)
 
@@ -329,27 +321,23 @@ func TestMultipleWatchRequests(t *testing.T){
 		}
 	}()
 
+	// create test files, edit them and remove
 	time.Sleep(1 * time.Second)
-	testFiles := []string{
-		randomizedFilePath("testFolder/subFolder/file#.txt"),
-		randomizedFilePath("testFolder/subFolder2/file#.txt")}
+	newFiles1 := createTestFiles(testSubFolder, 1)
+	newFiles2 := createTestFiles(testSubFolder2, 1 )
+	time.Sleep(1 * time.Second)
+	writeToFile(newFiles1[0], "updated")
+	writeToFile(newFiles2[0], "updated data")
+	time.Sleep(1 * time.Second)
+	removeFiles(false, append(newFiles1, newFiles2...)...)
 
-	// create, update and delete each of the files
-	for _,fp := range testFiles {
-		writeToFile(fp, "stuff")
-		time.Sleep(1 * time.Second)
-		writeToFile(fp, "updated stuff")
-		time.Sleep(1 * time.Second)
-	}
-
-	removeFiles(false, testFiles...)
 
 	time.Sleep(1 * time.Second)
 	// make sure the correct number of events were received
 	var eventType FileChange
 	for _, eventType= range []FileChange{Add, Remove, Write}{
-		if receivedEvents[eventType]!=len(testFiles){
-			t.Errorf("should have received %d %s events, got %d", len(testFiles), eventType, receivedEvents[eventType] )
+		if receivedEvents[eventType]!=2{
+			t.Errorf("should have received %d %s events, got %d", 2, eventType, receivedEvents[eventType] )
 		}
 	}
 
@@ -359,7 +347,7 @@ func TestMultipleWatchRequests(t *testing.T){
 
 func TestAddFileEvent(t *testing.T) {
 	watcher := New()
-	_ = watcher.AddFolder("testFolder", false, false)
+	_ = watcher.AddFolder(testFolderPath, false, false)
 	var receivedFileEvent FileEvent
 
 	// collect events from the watcher
@@ -375,8 +363,8 @@ func TestAddFileEvent(t *testing.T) {
 
 	watcher.Start()
 	time.Sleep(1 * time.Second)
-	writeToFile(normalFilePath, "nothing")
-	defer removeFiles(true, normalFilePath)
+	newTestFiles := createTestFiles(testFolderPath, 1)
+	defer removeFiles(true, newTestFiles...)
 
 	time.Sleep(1 * time.Second)
 	watcher.Stop()
@@ -387,13 +375,13 @@ func TestAddFileEvent(t *testing.T) {
 	}
 
 	// make sure the path was included in the FileEvent
-	absNormalFilePath , _ := filepath.Abs(normalFilePath)
-	if receivedFileEvent.FilePath != absNormalFilePath{
+	absTestFilePath, _ := filepath.Abs(newTestFiles[0])
+	if receivedFileEvent.FilePath != absTestFilePath {
 		t.Errorf("Filepath was not included in the FileEvent")
 	}
 
 	// make sure the new file is in the watchedFiles
-	_, fileFound := watcher.watchedFiles[absNormalFilePath]
+	_, fileFound := watcher.watchedFiles[absTestFilePath]
 	if !fileFound{
 		t.Errorf("%s should have been added to the watched files", normalFilePath)
 	}
@@ -406,56 +394,79 @@ func TestAddFileEvent(t *testing.T) {
 
 
 func TestMoveFileEvent(t *testing.T) {
-	// set up the watcher and a file
-	writeToFile(normalFilePath, "nothing")
+	// create two file paths, a before and after
+	firstPath := randomizedFilePath(path.Join(testFolderPath, "testfile#.txt"))
+	secondPath := randomizedFilePath(path.Join(testFolderPath, "testfile#.txt"))
+	writeToFile(firstPath, "nothing")
+
+	// set up the watcher
 	watcher := New()
-	_ = watcher.AddFolder("testFolder", true, false)
+	_ = watcher.AddFolder(testFolderPath, true, false)
 
 	// clean up the files that were used in this test
-	defer removeFiles(false, normalFilePath)
-	defer removeFiles(true, normalFilePath2)
+	defer removeFiles(false, firstPath, secondPath)
 
 	// start the watcher and collect events
-	var receivedFileEvent FileEvent
-	watcher.Start()
+	receivedEvents := make(map[FileChange]int)
+	var receivedMoveEvent FileEvent
 
+	watcher.Start()
+	// collect events from the watcher
 	go func () {
 		for {
 			select{
 			case <- watcher.Stopped:
 				return
-			case receivedFileEvent= <- watcher.FileChanged:
+			case event := <- watcher.FileChanged:
+				// keep a count of the file events
+				receivedEvents[event.FileChange] = receivedEvents[event.FileChange]+1
+
+				// if there's a move event, keep it in a variable to examine
+				if event.FileChange == Move{
+					receivedMoveEvent = event
+				}
 			}
 		}
 	}()
 
 	// Move the file and give some time to get the FileEvent on the channel
 	time.Sleep(1 * time.Second)
-	moveFile(normalFilePath, normalFilePath2)
+	moveFile(firstPath, secondPath)
 	time.Sleep(2 * time.Second)
 
-	// make sure the correct FileEvent was received
-	if receivedFileEvent.FileChange != Move {
-		t.Errorf("Watcher did not send Move FileEvent to the FileChanged channel. Wanted %v, got %v", Move, receivedFileEvent.FileChange)
-	}
+	if runtime.GOOS == "windows"{
+		// on windows, this file move will be represented as an Add and a Remove
+		if receivedEvents[Add]!=1{
+			t.Errorf("should have received 1 Add events, got %d", receivedEvents[Add] )
+		}
+		if receivedEvents[Remove]!=1{
+			t.Errorf("should have received 1 Remove events, got %d", receivedEvents[Remove] )
+		}
+	} else {
+		// on non-Windows operating systems, there should be a Move event
+		if receivedEvents[Move]!=1{
+			t.Errorf("should have received 1 Move events, got %d", receivedEvents[Move] )
+		}
 
-	// make sure the path and previous path are included in the FileEvent
-	if receivedFileEvent.FilePath != AbsPath(normalFilePath2){
-		t.Errorf("Filepath is not correct in FileEvent. Wanted %s, got %s", AbsPath(normalFilePath2), receivedFileEvent.FilePath)
-	}
-	if receivedFileEvent.PreviousPath!=AbsPath(normalFilePath){
-		t.Errorf("FileEvent should have PreviousPath value set for a Move event. Wanted '%s', got '%s'", AbsPath(normalFilePath2), receivedFileEvent.PreviousPath)
-	}
+		// make sure the path and previous path are included in the FileEvent
+		if receivedMoveEvent.FilePath != AbsPath(secondPath){
+			t.Errorf("Filepath is not correct in FileEvent. Wanted %s, got %s", AbsPath(secondPath), receivedMoveEvent.FilePath)
+		}
+		if receivedMoveEvent.PreviousPath!=AbsPath(firstPath){
+			t.Errorf("FileEvent should have PreviousPath value set for a Move event. Wanted '%s', got '%s'", AbsPath(firstPath), receivedMoveEvent.PreviousPath)
+		}
 
-	// Make sure the description is set
-	if !strings.Contains(receivedFileEvent.Description, receivedFileEvent.FilePath){
-		t.Errorf("FileEvent description should be set and contain the filepath")
+		// Make sure the description is set
+		if !strings.Contains(receivedMoveEvent.Description, receivedMoveEvent.FilePath){
+			t.Errorf("FileEvent description should be set and contain the filepath")
+		}
+
 	}
 
 	// Make sure the new path is in the watchedFiles map
-	_, fileFound := watcher.watchedFiles[AbsPath(normalFilePath2)]
+	_, fileFound := watcher.watchedFiles[AbsPath(secondPath)]
 	if !fileFound{
-		t.Errorf("file %s should be in the list of watched files", normalFilePath)
+		t.Errorf("file %s should be in the list of watched files", secondPath)
 	}
 
 	watcher.Stop()

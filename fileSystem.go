@@ -45,6 +45,7 @@ func GetFileList(folderPath string, recursive bool, showHidden bool) (fileList m
 	err = filepath.Walk(folderPath, func(filePath string, fileInfo os.FileInfo, err error) error{
 		if err != nil{
 			println(err.Error())
+			return err
 		}
 
 		// check if the file is hidden before adding it

@@ -2,18 +2,31 @@
 
 package folderWatcher
 
+import "syscall"
+
+// TODO this file should be named with _windows
 // TODO Test this on a Windows machine
 func isHiddenFile(filePath string) bool {
-	prt, err := syscall.UTF16PtrFromString(path)
+	prt, err := syscall.UTF16PtrFromString(filePath)
 	if err != nil {
-		return false, err
+		return false
 	}
 
 	attributes, err := syscall.GetFileAttributes(prt)
 	if err != nil {
-		return false, err
+		return false
 	}
-	w.State = Stopped
 
 	return attributes&syscall.FILE_ATTRIBUTE_HIDDEN != 0
+}
+
+func hideFile(filepath string) (err error){
+	winFilepath, err := syscall.UTF16PtrFromString(filepath)
+	if err !=nil {
+		return
+	}
+
+	// set the file attribute
+	err = syscall.SetFileAttributes(winFilepath, syscall.FILE_ATTRIBUTE_HIDDEN)
+	return
 }

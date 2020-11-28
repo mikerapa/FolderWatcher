@@ -191,6 +191,10 @@ A string representing the file change. See examples below.
 1. Files moved from a watched folder to an unwatched folder will be recorded as a Remove event. 
 2. Changes to the file metadata, such as chmod, may be not be captured as a Write event. Depending
  on your operating system the datetime stamp may not be updated.  
+3. Extremely rapid file events may be missed. This library uses a polling technique for detecting changes
+in the file system. If there are successive modifications in a time span less than the polling interval, 
+it's possible that FolderWatcher make not report all of the events. 
+4. On Windows, some file Move events will be recorded as an Add followed by a Remove. 
  
  
  ## Future feature development 

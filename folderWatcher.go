@@ -167,7 +167,7 @@ func (w *Watcher) scanForFileEvents(){
 			// Look for existing watchedFile which match
 			matchFoundInWatchedFiles:= false
 			for path,watchedFile:= range w.watchedFiles {
-				if os.SameFile(watchedFile, newFile){
+				if os.SameFile(watchedFile, newFile){ //  SameFile check does not work the same on Windows
 					// a matching file was found in the watched files list. Count this as a moved file.
 					matchFoundInWatchedFiles = true
 					movedFiles[path] = newFilePath

@@ -1,21 +1,11 @@
 package folderWatcher
 
 import (
-	"fmt"
-	"math/rand"
 	"os"
-	"strings"
 	"testing"
-	"time"
 )
 
-func randomizedFilePath(pathTemplate string) string {
-	pathTemplate = strings.Replace(pathTemplate, "#", "%d", 1)
-	s1 := rand.NewSource(time.Now().UnixNano())
-	r1 := rand.New(s1)
-	rndNum := r1.Intn(1000)
-	return fmt.Sprintf(pathTemplate, rndNum)
-}
+
 
 
 
