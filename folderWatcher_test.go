@@ -4,7 +4,6 @@ import (
 	"math"
 	"math/rand"
 	"os"
-	"path"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -129,7 +128,7 @@ func TestWatcher_RemoveFolder(t *testing.T) {
 
 	for _, tt := range tests {
 		watcher := New()
-		err:=watcher.AddFolder("testFolder", true, false)
+		err:=watcher.AddFolder(testFolderPath, true, false)
 		if err!=nil{
 			t.Error(err.Error())
 		}
@@ -253,7 +252,7 @@ func TestStartTwice(t *testing.T){
 // Test stopping and restarting the watcher
 func TestRestartWatcher(t *testing.T) {
 	var testFiles  []string
-	defer removeFiles(false, testFiles...)
+
 
 	const iterations =3
 	watcher := New()
@@ -289,7 +288,7 @@ func TestRestartWatcher(t *testing.T) {
 		time.Sleep(1 * time.Second)
 	}
 
-
+	defer removeFiles(false, testFiles...)
 	// make sure the correct number of events were received
 	var eventType FileChange
 	for _, eventType= range []FileChange{Add, Write}{
@@ -383,7 +382,7 @@ func TestAddFileEvent(t *testing.T) {
 	// make sure the new file is in the watchedFiles
 	_, fileFound := watcher.watchedFiles[absTestFilePath]
 	if !fileFound{
-		t.Errorf("%s should have been added to the watched files", normalFilePath)
+		t.Errorf("%s should have been added to the watched files", newTestFiles[0])
 	}
 
 	// Make sure the description is set
@@ -395,8 +394,8 @@ func TestAddFileEvent(t *testing.T) {
 
 func TestMoveFileEvent(t *testing.T) {
 	// create two file paths, a before and after
-	firstPath := randomizedFilePath(path.Join(testFolderPath, "testfile#.txt"))
-	secondPath := randomizedFilePath(path.Join(testFolderPath, "testfile#.txt"))
+	firstPath := randomizedFilePath(filepath.Join(testFolderPath, "testfile#.txt"))
+	secondPath := randomizedFilePath(filepath.Join(testFolderPath, "testfile#.txt"))
 	writeToFile(firstPath, "nothing")
 
 	// set up the watcher
@@ -472,19 +471,19 @@ func TestMoveFileEvent(t *testing.T) {
 	watcher.Stop()
 }
 
-
+// This test should cover updates to an existing which is being watched
 func TestWriteFileEvent(t *testing.T) {
 	// set up the watcher and a file
-	writeToFile(normalFilePath, "nothing")
+	testFilePath := createTestFiles(testFolderPath, 1)[0]
 	watcher := New()
-	_= watcher.AddFolder("testFolder", false, false)
+	_= watcher.AddFolder(testFolderPath, false, false)
 
 	// get the mod time for the newly created file. This will be used to for a comparison.
-	absNormalFilePath, _ := filepath.Abs(normalFilePath)
-	testFile,_ :=watcher.watchedFiles[absNormalFilePath]
+	absTestFilePath, _ := filepath.Abs(testFilePath)
+	testFile,_ :=watcher.watchedFiles[absTestFilePath]
 	initialModTime := testFile.ModTime()
 
-	defer removeFiles(true, normalFilePath)
+	defer removeFiles(true, testFilePath)
 
 	// start the watcher and collect events
 	var receivedFileEvent FileEvent
@@ -502,7 +501,7 @@ func TestWriteFileEvent(t *testing.T) {
 
 	// update the file and give some time to get the FileEvent on the channel
 	time.Sleep(1 * time.Second)
-	writeToFile(normalFilePath, "updated file content")
+	writeToFile(testFilePath, "updated file content")
 	time.Sleep(2 * time.Second)
 
 
@@ -513,14 +512,14 @@ func TestWriteFileEvent(t *testing.T) {
 	}
 
 	// make sure the path is included in the FileEvent
-	if receivedFileEvent.FilePath != absNormalFilePath{
+	if receivedFileEvent.FilePath != absTestFilePath{
 		t.Errorf("Filepath was not included in the FileEvent")
 	}
 
 	// make sure the updated file remains in the watched files list
-	newWatchedFile, fileFound := watcher.watchedFiles[absNormalFilePath]
+	newWatchedFile, fileFound := watcher.watchedFiles[absTestFilePath]
 	if !fileFound{
-		t.Errorf("file %s should have remained in the list of watched files", normalFilePath)
+		t.Errorf("file %s should have remained in the list of watched files", testFilePath)
 	}
 
 	// compare the mod time of the file in the watchedFiles list. It should be different that the original value
@@ -541,9 +540,9 @@ func TestWriteFileEvent(t *testing.T) {
 func TestRemoveFileEvent(t *testing.T) {
 	// set up the watcher and a file
 	watcher := New()
-	_= watcher.AddFolder("testFolder", false, false)
-	writeToFile(normalFilePath, "nothing")
-	defer removeFiles(false, normalFilePath)
+	_= watcher.AddFolder(testFolderPath, false, false)
+	testFilePath:= createTestFiles(testFolderPath,1)[0]
+	defer removeFiles(false, testFilePath)
 
 	// start the watcher and collect events
 	var receivedFileEvent FileEvent
@@ -561,7 +560,7 @@ func TestRemoveFileEvent(t *testing.T) {
 
 	// delete the file and give some time to get the FileEvent on the channel
 	time.Sleep(1 * time.Second)
-	removeFiles(true, normalFilePath)
+	removeFiles(true, testFilePath)
 	time.Sleep(1 * time.Second)
 
 	watcher.Stop()
@@ -572,14 +571,14 @@ func TestRemoveFileEvent(t *testing.T) {
 	}
 
 	// make sure the path is included in the FileEvent
-	if receivedFileEvent.FilePath != AbsPath(normalFilePath){
+	if receivedFileEvent.FilePath != AbsPath(testFilePath){
 		t.Errorf("Filepath was not included in the FileEvent")
 	}
 
 	// make sure the removed file is no longer being watched
-	_, fileFound := watcher.watchedFiles[normalFilePath]
+	_, fileFound := watcher.watchedFiles[testFilePath]
 	if fileFound{
-		t.Errorf("file was not removed with the Remove FileEvent path=%s", normalFilePath)
+		t.Errorf("file was not removed with the Remove FileEvent path=%s", testFilePath)
 	}
 
 	// Make sure the description is set

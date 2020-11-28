@@ -5,36 +5,39 @@ import (
 	"math/rand"
 	"os"
 	"path"
+	"path/filepath"
 	"runtime"
 	"strings"
 	)
 
-const(
-	normalFilePath = "testFolder/testFile.txt"
-	hiddenFilePath = "testFolder/.hiddenTestFile.txt"
-	normalFilePath2 = "testFolder/subFolder/testFile2.txt"
-	hiddenFilePath2= "testFolder/subFolder/.hiddenTestFile2.txt"
-)
+//const(
+//	normalFilePath = "testFolder/testFile.txt"
+//	hiddenFilePath = "testFolder/.hiddenTestFile.txt"
+//	normalFilePath2 = "testFolder/subFolder/testFile2.txt"
+//	hiddenFilePath2= "testFolder/subFolder/.hiddenTestFile2.txt"
+//)
 
 const (
-	testFolderPath = "testFolder"
-	testSubFolder2 = "testFolder/subFolder2"
-	testSubFolder = "testFolder/subFolder"
+	testFolderPath = "testFolder")
+
+var(
+	testSubFolder2 = filepath.Join("testFolder","subFolder2")
+	testSubFolder = filepath.Join("testFolder","subFolder")
 )
 
 
 
-func setupTestFiles(){
-	// set up the test folder
-	writeToFile(normalFilePath, "nothing")
-	writeToFile(hiddenFilePath, "empty file")
-	writeToFile(normalFilePath2, "nothing")
-	writeToFile(hiddenFilePath2, "empty file")
-
-}
+//func setupTestFiles(){
+//	// set up the test folder
+//	writeToFile(normalFilePath, "nothing")
+//	writeToFile(hiddenFilePath, "empty file")
+//	writeToFile(normalFilePath2, "nothing")
+//	writeToFile(hiddenFilePath2, "empty file")
+//
+//}
 
 func createTestFiles(folderPath string, count int) (fileList []string){
-	filePathTemplate := path.Join(folderPath, "testfile#.txt")
+	filePathTemplate := filepath.Join(folderPath, "testfile#.txt")
 	for i:=1; i<=count; i++{
 		newFilePath := randomizedFilePath(filePathTemplate)
 		rndNum := rand.Intn(1000)
@@ -50,9 +53,9 @@ func createHiddenTestFiles(folderPath string, count int ) (fileList []string, er
 	// if this is running on a non-Windows OS, put the dot in front of the name to make the file
 	// hidden.
 	if runtime.GOOS == "windows"{
-		filePathTemplate = path.Join(folderPath, "testfile#.txt")
+		filePathTemplate = filepath.Join(folderPath, "testfile#.txt")
 	} else {
-		filePathTemplate = path.Join(folderPath, ".testfile#.txt")
+		filePathTemplate = filepath.Join(folderPath, ".testfile#.txt")
 	}
 
 	// create test files with random names and content
@@ -73,11 +76,11 @@ func randomizedFilePath(pathTemplate string) string {
 }
 
 
-func tearDownTestFiles(){
-	// remove test files from the test folder
-	removeFiles(true, normalFilePath, hiddenFilePath, normalFilePath2, hiddenFilePath2)
-
-}
+//func tearDownTestFiles(){
+//	// remove test files from the test folder
+//	removeFiles(true, normalFilePath, hiddenFilePath, normalFilePath2, hiddenFilePath2)
+//
+//}
 
 func closeFiles(files ...*os.File){
 	for _, file:= range files{

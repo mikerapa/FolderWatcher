@@ -2,6 +2,7 @@ package folderWatcher
 
 import (
 	"os"
+	"path/filepath"
 	"testing"
 )
 
@@ -18,13 +19,13 @@ func TestIsValidPath(t *testing.T) {
 	}
 
 	// try with the test folder
-	validFolderPath := "testFolder"
+	validFolderPath := testFolderPath
 	isValid = IsValidPath(validFolderPath)
 	if !isValid {
 		t.Errorf("%s is a valid folder path", validFolderPath)
 	}
 
-	newFilePath := randomizedFilePath("testFolder/tempfile#.txt")
+	newFilePath := randomizedFilePath(filepath.Join(testFolderPath, "tempfile#.txt"))
 	// the new file path should not be valid yet.
 	if isValid=IsValidPath(newFilePath); isValid{
 		t.Errorf("%s is not a valid path", newFilePath)
@@ -70,49 +71,47 @@ func assertFileInMap(t *testing.T, fileList map[string]os.FileInfo, filenames ..
 	}
 }
 
-func Test_GetFileList(t *testing.T) {
-
-	// set up the test folder
-	setupTestFiles()
-	defer tearDownTestFiles()
-
-	// Try finding files recursive, without hidden files
-	fileListRecursiveNotHidden, err := GetFileList("testFolder",true, false )
-	if err != nil {
-		t.Errorf("GetFileList: %s", err.Error())
+// Tests to make sure that the GetFileList function finds the correct files
+func TestGetFileList(t *testing.T) {
+	tests := []struct {
+		name         string
+		recursive  bool
+		showHidden bool
+		wantFileCount int
+		folderPath string
+		wantErr      bool
+	}{
+		{name: "invalid path", recursive: false, showHidden: false, wantFileCount: 0, folderPath: "fakepath", wantErr: true},
+		{name: "root", recursive: false, showHidden: false, wantFileCount: 2, folderPath: testFolderPath, wantErr: false},
+		{name: "just sub folder", recursive: false, showHidden: false, wantFileCount: 2, folderPath: testSubFolder, wantErr: false},
+		{name: "just sub folder with hidden", recursive: false, showHidden: true, wantFileCount: 3, folderPath: testSubFolder, wantErr: false},
+		{name: "root recursive", recursive: true, showHidden: false, wantFileCount: 4, folderPath: testFolderPath, wantErr: false},
+		{name: "root recursive with hidden", recursive: true, showHidden: true, wantFileCount: 6, folderPath: testFolderPath, wantErr: false},
 	}
-	if len(fileListRecursiveNotHidden) != 2{
-		t.Errorf("GetFileList() should have found 2 files, found %d", len(fileListRecursiveNotHidden))
-	}
+	// prepare test files
+	rootFilePaths := createTestFiles(testFolderPath, 2)
+	subFilePaths := createTestFiles(testSubFolder, 2)
+	rootHiddenFilePaths, _ := createHiddenTestFiles(testFolderPath, 1)
+	subHiddenFilePaths, _ := createHiddenTestFiles(testSubFolder, 1)
+	// clean up files
+	defer removeFiles(false, rootFilePaths...)
+	defer removeFiles(false, subFilePaths...)
+	defer removeFiles(false, rootHiddenFilePaths...)
+	defer removeFiles(false, subHiddenFilePaths...)
 
-	// make sure the correct files are in the collection
-	assertFileInMap(t, fileListRecursiveNotHidden, normalFilePath2, normalFilePath)
-
-	// Try finding files not recursive, without hidden files
-	fileListNonRecursiveNoHidden, err := GetFileList("testFolder",false, false )
-	if err != nil {
-		t.Errorf("GetFileList: %s", err.Error())
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gotFileList, err := GetFileList(tt.folderPath, tt.recursive, tt.showHidden)
+			// test error condition
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetFileList() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			// test the file count
+			gotFileCount:= len(gotFileList)
+			if gotFileCount != tt.wantFileCount{
+				t.Errorf("GetFileList() want %d files, got %d", tt.wantFileCount, gotFileCount)
+			}
+		})
 	}
-	if len(fileListNonRecursiveNoHidden) != 1{
-		t.Errorf("GetFileList() should have found 1 file, found %d", len(fileListNonRecursiveNoHidden))
-	}
-	// make sure the correct files are in the collection
-	assertFileInMap(t, fileListNonRecursiveNoHidden, normalFilePath)
-
-	// Try finding files recursive with hidden files
-	fileListRecursiveHidden, err :=  GetFileList("testFolder", true, true)
-	if len(fileListRecursiveHidden)!=4{
-		t.Errorf("GetFileList() should have 4 files, found %d", len(fileListRecursiveHidden))
-	}
-	// make sure the correct files are in the map
-	assertFileInMap(t, fileListRecursiveHidden, normalFilePath, normalFilePath2, hiddenFilePath, hiddenFilePath2)
-
-	// TRy finding files non-recursive with hidden files
-	fileListNonRecursiveHidden, err :=  GetFileList("testFolder", false, true)
-	if len(fileListNonRecursiveHidden)!=2{
-		t.Errorf("GetFileList() should have 2 files, found %d", len(fileListNonRecursiveHidden))
-	}
-	// make sure the correct files are in the map
-	assertFileInMap(t, fileListNonRecursiveHidden, normalFilePath, hiddenFilePath)
-
 }
