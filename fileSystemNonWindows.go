@@ -15,7 +15,7 @@ func isHiddenFile(filePath string) bool {
 
 func hideFile(filepath string) (err error){
 	if !isHiddenFile(filepath){
-		err = os.Rename(filepath, fmt.Sprint(".%s", filepath))
+		err = os.Rename(filepath, fmt.Sprintf(".%s", filepath))
 	}
 	return
 }
