@@ -4,8 +4,6 @@ package folderWatcher
 
 import "syscall"
 
-// TODO this file should be named with _windows
-// TODO Test this on a Windows machine
 func isHiddenFile(filePath string) bool {
 	prt, err := syscall.UTF16PtrFromString(filePath)
 	if err != nil {

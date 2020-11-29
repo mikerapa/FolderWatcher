@@ -11,12 +11,11 @@ import (
 	"time"
 )
 
-// TODO seems like this is not getting called
+// template func for all test functions
 func TestMain(m *testing.M) {
 	rand.Seed(time.Now().UnixNano())
 	println("In TestMain")
 	code := m.Run()
-	// TODO should do some file clean up here?
 	os.Exit(code)
 }
 
