@@ -330,7 +330,7 @@ func TestMultipleWatchRequests(t *testing.T){
 	removeFiles(false, append(newFiles1, newFiles2...)...)
 
 
-	time.Sleep(1 * time.Second)
+	time.Sleep(2 * time.Second)
 	// make sure the correct number of events were received
 	var eventType FileChange
 	for _, eventType= range []FileChange{Add, Remove, Write}{

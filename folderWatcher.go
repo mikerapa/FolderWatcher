@@ -44,7 +44,7 @@ type Watcher struct {
 	watchedFiles map[string]os.FileInfo
 	Stopped chan bool
 	FileChanged chan FileEvent
-	watchedFileMutex *sync.Mutex
+	watchedFileMutex *sync.RWMutex
 	State WatcherState
 }
 
@@ -55,7 +55,7 @@ func New() Watcher {
 		watchedFiles: make(map[string]os.FileInfo),
 		Stopped: make(chan bool),
 		FileChanged: make(chan FileEvent),
-		watchedFileMutex: &sync.Mutex{},
+		watchedFileMutex: &sync.RWMutex{},
 		State: NotStarted,
 	}
 
@@ -175,15 +175,12 @@ func (w *Watcher) scanForFileEvents(){
 						FilePath: newFilePath,
 						PreviousPath: path,
 						Description: fmt.Sprintf("%s move to %s", path, newFilePath)}
-					w.removeWatchedFile(path)
-					w.addUpdateWatchedFile(newFilePath, newFile)
 					break
 				}
 			}
 			// The file is in the new list of files, but not the watchedFiles list and the file was not moved.
 			// Process this as a new file.
 			if !matchFoundInWatchedFiles{
-				w.addUpdateWatchedFile(newFilePath, newFile)
 				w.FileChanged<- FileEvent{FileChange:Add, FilePath: newFilePath,
 					Description: fmt.Sprintf("%s created", newFilePath)}
 			}
@@ -193,24 +190,21 @@ func (w *Watcher) scanForFileEvents(){
 			if newFile.ModTime() != existingFile.ModTime(){
 				w.FileChanged<-FileEvent{FileChange:Write, FilePath: newFilePath,
 				Description: fmt.Sprintf("%s updated", newFilePath)}
-				w.addUpdateWatchedFile(newFilePath, newFile)
 			}
 		}
 	}
 
-	go func() {
-		// find deleted files
-		for path:= range w.watchedFiles{
-			_,isInNewFilesList := newFileList[path]
-			_,isMovedFile := movedFiles[path]
-			if !isInNewFilesList && ! isMovedFile{
-				w.FileChanged<- FileEvent{FileChange: Remove, FilePath: path,
-					Description: fmt.Sprintf("%s deleted", path)}
-				w.removeWatchedFile(path)
-			}
+	// find deleted files
+	for path:= range w.watchedFiles{
+		_,isInNewFilesList := newFileList[path]
+		_,isMovedFile := movedFiles[path]
+		if !isInNewFilesList && ! isMovedFile{
+			w.FileChanged<- FileEvent{FileChange: Remove, FilePath: path,
+				Description: fmt.Sprintf("%s deleted", path)}
 		}
-	}()
-
+	}
+	// replace the watch list with the newly created map
+	w.watchedFiles = newFileList
 
 }
 
