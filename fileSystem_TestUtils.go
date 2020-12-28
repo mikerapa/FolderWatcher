@@ -34,6 +34,20 @@ func createTestFiles(folderPath string, count int) (fileList []string){
 	return
 }
 
+// Creates test files without any randomization
+// this method should be used for testing only.
+func createSequentialTestFiles(folderPath string, count int) (fileList []string){
+	filePathTemplate := filepath.Join(folderPath, "seqtestfile%d.txt")
+	for i:=1; i<=count; i++{
+		newFilePath := fmt.Sprintf(filePathTemplate, i)
+		writeToFile(newFilePath, "file from createSequentialTestFiles" )
+		fileList = append(fileList, newFilePath)
+	}
+
+	return
+}
+
+
 func createHiddenTestFiles(folderPath string, count int ) (fileList []string, err error ){
 	var filePathTemplate string
 	// if this is running on a non-Windows OS, put the dot in front of the name to make the file

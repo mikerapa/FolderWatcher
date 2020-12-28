@@ -108,7 +108,6 @@ func (w *Watcher) AddFolder(path string, recursive bool, showHidden bool) (err e
 	for p, file := range newFilesToWatch{
 		w.addUpdateWatchedFile(p, file)
 	}
-	w.updateInterval()
 	return
 }
 
@@ -136,7 +135,6 @@ func (w *Watcher) RemoveFolder(path string, returnErrorIfNotFound bool) ( err er
 		w.removeWatchedFile(p)
 	}
 	delete(w.RequestedWatches, path)
-	w.updateInterval()
 	return
 }
 
@@ -219,6 +217,7 @@ func (w *Watcher) scanForFileEvents() {
 	}
 	// replace the watch list with the newly created map
 	w.watchedFiles = newFileList
+	w.updateInterval()
 
 }
 
