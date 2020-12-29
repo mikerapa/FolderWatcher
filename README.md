@@ -201,4 +201,12 @@ it's possible that FolderWatcher make not report all of the events.
  - [ ] Pause - ability to temporarily discontinue file events, but not stop the watcher
  - [ ] Clear - remove all watched folders and watched files
  - [ ] Override Interval - the cycle interval (rate at which the file system is polled for changes) is automatically set based 
- on the number of files being watched. There is no feature to override that value. 
+ on the number of files being watched. There is no feature to override that value.
+   
+## Version History
+### v1.0
+ - Initial version 
+### v1.1 
+ - Corrected concurrency error. See Issue #2. 
+ - Made changes to improve the performance of each iteration 
+ - Changed iteration processing to re-calculate the interval time with each iteration. 
