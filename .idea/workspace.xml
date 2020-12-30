@@ -9,6 +9,7 @@
   <component name="ChangeListManager">
     <list default="true" id="47410a95-6b2e-45e9-9244-1017fb4cd8de" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/fileSystem_TestUtils.go" beforeDir="false" afterPath="$PROJECT_DIR$/fileSystem_TestUtils.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/folderWatcher.go" beforeDir="false" afterPath="$PROJECT_DIR$/folderWatcher.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/folderWatcher_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/folderWatcher_test.go" afterDir="false" />
     </list>
@@ -101,7 +102,7 @@
       <pattern value="^\QTestMultipleWatchRequests\E$" />
       <method v="2" />
     </configuration>
-    <configuration name="TestRestartWatcher in github.com/mikerapa/FolderWatcher" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
+    <configuration name="TestReCalculateInterval in github.com/mikerapa/FolderWatcher" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
       <module name="FolderWatcher" />
       <working_directory value="$PROJECT_DIR$" />
       <framework value="gotest" />
@@ -109,7 +110,7 @@
       <package value="github.com/mikerapa/FolderWatcher" />
       <directory value="$PROJECT_DIR$" />
       <filePath value="$PROJECT_DIR$" />
-      <pattern value="^\QTestRestartWatcher\E$" />
+      <pattern value="^\QTestReCalculateInterval\E$" />
       <method v="2" />
     </configuration>
     <configuration name="TestWriteFileEvent in github.com/mikerapa/FolderWatcher" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
@@ -138,17 +139,17 @@
       <item itemvalue="Go Test.go test FolderWatcher" />
       <item itemvalue="Go Test.TestAddFileEvent in github.com/mikerapa/FolderWatcher" />
       <item itemvalue="Go Test.TestMoveFileEvent in github.com/mikerapa/FolderWatcher" />
-      <item itemvalue="Go Test.TestRestartWatcher in github.com/mikerapa/FolderWatcher" />
       <item itemvalue="Go Test.TestWriteFileEvent in github.com/mikerapa/FolderWatcher" />
       <item itemvalue="Go Test.TestMultipleWatchRequests in github.com/mikerapa/FolderWatcher" />
+      <item itemvalue="Go Test.TestReCalculateInterval in github.com/mikerapa/FolderWatcher" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Go Test.TestReCalculateInterval in github.com/mikerapa/FolderWatcher" />
+        <item itemvalue="Go Test.TestAddFileEvent in github.com/mikerapa/FolderWatcher" />
         <item itemvalue="Go Test.TestMultipleWatchRequests in github.com/mikerapa/FolderWatcher" />
         <item itemvalue="Go Test.TestMoveFileEvent in github.com/mikerapa/FolderWatcher" />
         <item itemvalue="Go Test.TestWriteFileEvent in github.com/mikerapa/FolderWatcher" />
-        <item itemvalue="Go Test.TestAddFileEvent in github.com/mikerapa/FolderWatcher" />
-        <item itemvalue="Go Test.TestRestartWatcher in github.com/mikerapa/FolderWatcher" />
       </list>
     </recent_temporary>
   </component>
@@ -164,7 +165,7 @@
       <breakpoints>
         <line-breakpoint enabled="true" type="DlvLineBreakpoint">
           <url>file://$PROJECT_DIR$/fileSystem_TestUtils.go</url>
-          <line>62</line>
+          <line>76</line>
           <option name="timeStamp" value="32" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="DlvLineBreakpoint">
@@ -174,21 +175,32 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="DlvLineBreakpoint">
           <url>file://$PROJECT_DIR$/folderWatcher.go</url>
-          <line>201</line>
-          <option name="timeStamp" value="37" />
+          <line>87</line>
+          <option name="timeStamp" value="41" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="DlvLineBreakpoint">
-          <condition expression="len(w.watchedFiles)!=len(newFileList)" language="go" />
           <url>file://$PROJECT_DIR$/folderWatcher.go</url>
-          <line>206</line>
-          <option name="timeStamp" value="39" />
+          <line>219</line>
+          <option name="timeStamp" value="44" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+          <url>file://$PROJECT_DIR$/folderWatcher.go</url>
+          <line>154</line>
+          <option name="timeStamp" value="45" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+          <url>file://$PROJECT_DIR$/fileSystem_TestUtils.go</url>
+          <line>104</line>
+          <option name="timeStamp" value="47" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
     <watches-manager>
       <configuration name="GoTestRunConfiguration">
-        <watch expression="len(newFileList)" language="go" />
-        <watch expression="len(w.watchedFiles)" language="go" />
+        <watch expression="len(newFileList)" />
+        <watch expression="len(w.watchedFiles)" />
+        <watch expression="len(fl)" />
+        <watch expression="w.Interval" language="go" />
       </configuration>
     </watches-manager>
   </component>
