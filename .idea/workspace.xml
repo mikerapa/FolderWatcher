@@ -9,7 +9,9 @@
   <component name="ChangeListManager">
     <list default="true" id="47410a95-6b2e-45e9-9244-1017fb4cd8de" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/fileSystem_TestUtils.go" beforeDir="false" afterPath="$PROJECT_DIR$/fileSystem_TestUtils.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/folderWatcher.go" beforeDir="false" afterPath="$PROJECT_DIR$/folderWatcher.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/folderWatcher_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/folderWatcher_test.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -46,7 +48,7 @@
     <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
     <property name="nodejs_npm_path_reset_for_default_project" value="true" />
     <property name="run.code.analysis.last.selected.profile" value="pProject Default" />
-    <property name="settings.editor.selected.configurable" value="preferences.keymap" />
+    <property name="settings.editor.selected.configurable" value="preferences.pluginManager" />
   </component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
@@ -89,7 +91,7 @@
       <pattern value="^\QTestMoveFileEvent\E$" />
       <method v="2" />
     </configuration>
-    <configuration name="TestRestartWatcher in github.com/mikerapa/FolderWatcher" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
+    <configuration name="TestMultipleWatchRequests in github.com/mikerapa/FolderWatcher" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
       <module name="FolderWatcher" />
       <working_directory value="$PROJECT_DIR$" />
       <framework value="gotest" />
@@ -97,10 +99,10 @@
       <package value="github.com/mikerapa/FolderWatcher" />
       <directory value="$PROJECT_DIR$" />
       <filePath value="$PROJECT_DIR$" />
-      <pattern value="^\QTestRestartWatcher\E$" />
+      <pattern value="^\QTestMultipleWatchRequests\E$" />
       <method v="2" />
     </configuration>
-    <configuration name="TestStartTwice in github.com/mikerapa/FolderWatcher" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
+    <configuration name="TestReCalculateInterval in github.com/mikerapa/FolderWatcher" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
       <module name="FolderWatcher" />
       <working_directory value="$PROJECT_DIR$" />
       <framework value="gotest" />
@@ -108,7 +110,7 @@
       <package value="github.com/mikerapa/FolderWatcher" />
       <directory value="$PROJECT_DIR$" />
       <filePath value="$PROJECT_DIR$" />
-      <pattern value="^\QTestStartTwice\E$" />
+      <pattern value="^\QTestReCalculateInterval\E$" />
       <method v="2" />
     </configuration>
     <configuration name="TestWriteFileEvent in github.com/mikerapa/FolderWatcher" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
@@ -135,19 +137,19 @@
     </configuration>
     <list>
       <item itemvalue="Go Test.go test FolderWatcher" />
-      <item itemvalue="Go Test.TestStartTwice in github.com/mikerapa/FolderWatcher" />
-      <item itemvalue="Go Test.TestRestartWatcher in github.com/mikerapa/FolderWatcher" />
       <item itemvalue="Go Test.TestAddFileEvent in github.com/mikerapa/FolderWatcher" />
-      <item itemvalue="Go Test.TestWriteFileEvent in github.com/mikerapa/FolderWatcher" />
       <item itemvalue="Go Test.TestMoveFileEvent in github.com/mikerapa/FolderWatcher" />
+      <item itemvalue="Go Test.TestWriteFileEvent in github.com/mikerapa/FolderWatcher" />
+      <item itemvalue="Go Test.TestMultipleWatchRequests in github.com/mikerapa/FolderWatcher" />
+      <item itemvalue="Go Test.TestReCalculateInterval in github.com/mikerapa/FolderWatcher" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Go Test.TestReCalculateInterval in github.com/mikerapa/FolderWatcher" />
+        <item itemvalue="Go Test.TestAddFileEvent in github.com/mikerapa/FolderWatcher" />
+        <item itemvalue="Go Test.TestMultipleWatchRequests in github.com/mikerapa/FolderWatcher" />
         <item itemvalue="Go Test.TestMoveFileEvent in github.com/mikerapa/FolderWatcher" />
         <item itemvalue="Go Test.TestWriteFileEvent in github.com/mikerapa/FolderWatcher" />
-        <item itemvalue="Go Test.TestAddFileEvent in github.com/mikerapa/FolderWatcher" />
-        <item itemvalue="Go Test.TestRestartWatcher in github.com/mikerapa/FolderWatcher" />
-        <item itemvalue="Go Test.TestStartTwice in github.com/mikerapa/FolderWatcher" />
       </list>
     </recent_temporary>
   </component>
@@ -158,147 +160,12 @@
   <component name="VgoProject">
     <integration-enabled>true</integration-enabled>
   </component>
-  <component name="WindowStateProjectService">
-    <state x="473" y="228" width="1084" height="796" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1604717286447">
-      <screen x="0" y="27" width="1920" height="1053" />
-    </state>
-    <state x="473" y="228" width="1084" height="748" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.27.1920.1053/3440.0.3440.1440@0.27.1920.1053" timestamp="1604618334291" />
-    <state x="473" y="228" width="1084" height="796" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.27.1920.1053@0.27.1920.1053" timestamp="1604717286447" />
-    <state x="1999" y="506" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.27.3440.1413@0.27.3440.1413" timestamp="1604427762751" />
-    <state x="931" y="342" width="563" height="494" key="#xdebugger.XInspectDialog" timestamp="1604549268635">
-      <screen x="0" y="27" width="1920" height="1053" />
-    </state>
-    <state x="931" y="342" width="563" height="494" key="#xdebugger.XInspectDialog/0.27.1920.1053/3440.0.3440.1440@3440.0.3440.1440" timestamp="1604549268635" />
-    <state x="4899" y="559" width="381" height="297" key="ANALYSIS_DLG_com.intellij.analysis.BaseAnalysisAction$1" timestamp="1605668245435">
-      <screen x="0" y="27" width="6880" height="1413" />
-    </state>
-    <state x="5890" y="542" width="381" height="297" key="ANALYSIS_DLG_com.intellij.analysis.BaseAnalysisAction$1/0.27.3440.1413/3440.0.3440.1440@3440.0.3440.1440" timestamp="1605475597955" />
-    <state x="4899" y="559" width="512" height="291" key="ANALYSIS_DLG_com.intellij.analysis.BaseAnalysisAction$1/0.27.6880.1413@0.27.6880.1413" timestamp="1605668245435" />
-    <state x="2090" y="640" width="349" height="491" key="FileChooserDialogImpl" timestamp="1605538527122">
-      <screen x="0" y="27" width="3440" height="1413" />
-    </state>
-    <state x="2090" y="640" width="424" height="491" key="FileChooserDialogImpl/0.27.3440.1413/3440.0.3440.1440@0.27.3440.1413" timestamp="1604617572495" />
-    <state x="2090" y="640" width="349" height="491" key="FileChooserDialogImpl/0.27.3440.1413@0.27.3440.1413" timestamp="1605538527122" />
-    <state x="4180" y="640" key="FileChooserDialogImpl/0.27.6880.1413@0.27.6880.1413" timestamp="1604865277130" />
-    <state width="1923" height="409" key="GridCell.Tab.0.bottom" timestamp="1605670420177">
-      <screen x="0" y="27" width="6880" height="1413" />
-    </state>
-    <state width="1800" height="335" key="GridCell.Tab.0.bottom/0.27.1920.1053/3440.0.3440.1440@0.27.1920.1053" timestamp="1605153979423" />
-    <state width="1876" height="268" key="GridCell.Tab.0.bottom/0.27.1920.1053/3440.0.3440.1440@3440.0.3440.1440" timestamp="1604550305406" />
-    <state width="1876" height="303" key="GridCell.Tab.0.bottom/0.27.1920.1053@0.27.1920.1053" timestamp="1605578911304" />
-    <state width="1866" height="476" key="GridCell.Tab.0.bottom/0.27.3440.1413/3440.0.3440.1440@0.27.3440.1413" timestamp="1605493818971" />
-    <state width="2259" height="516" key="GridCell.Tab.0.bottom/0.27.3440.1413/3440.0.3440.1440@3440.0.3440.1440" timestamp="1605496295430" />
-    <state width="1800" height="351" key="GridCell.Tab.0.bottom/0.27.3440.1413@0.27.3440.1413" timestamp="1605547228796" />
-    <state width="1654" height="353" key="GridCell.Tab.0.bottom/0.27.5488.2540@0.27.5488.2540" timestamp="1604375130622" />
-    <state width="1923" height="409" key="GridCell.Tab.0.bottom/0.27.6880.1413@0.27.6880.1413" timestamp="1605670420177" />
-    <state width="1923" height="409" key="GridCell.Tab.0.center" timestamp="1605670420177">
-      <screen x="0" y="27" width="6880" height="1413" />
-    </state>
-    <state width="1800" height="335" key="GridCell.Tab.0.center/0.27.1920.1053/3440.0.3440.1440@0.27.1920.1053" timestamp="1605153979423" />
-    <state width="1876" height="268" key="GridCell.Tab.0.center/0.27.1920.1053/3440.0.3440.1440@3440.0.3440.1440" timestamp="1604550305405" />
-    <state width="1876" height="303" key="GridCell.Tab.0.center/0.27.1920.1053@0.27.1920.1053" timestamp="1605578911303" />
-    <state width="1866" height="476" key="GridCell.Tab.0.center/0.27.3440.1413/3440.0.3440.1440@0.27.3440.1413" timestamp="1605493818971" />
-    <state width="2259" height="516" key="GridCell.Tab.0.center/0.27.3440.1413/3440.0.3440.1440@3440.0.3440.1440" timestamp="1605496295430" />
-    <state width="1800" height="351" key="GridCell.Tab.0.center/0.27.3440.1413@0.27.3440.1413" timestamp="1605547228796" />
-    <state width="1654" height="353" key="GridCell.Tab.0.center/0.27.5488.2540@0.27.5488.2540" timestamp="1604375130621" />
-    <state width="1923" height="409" key="GridCell.Tab.0.center/0.27.6880.1413@0.27.6880.1413" timestamp="1605670420177" />
-    <state width="1923" height="409" key="GridCell.Tab.0.left" timestamp="1605670420176">
-      <screen x="0" y="27" width="6880" height="1413" />
-    </state>
-    <state width="1800" height="335" key="GridCell.Tab.0.left/0.27.1920.1053/3440.0.3440.1440@0.27.1920.1053" timestamp="1605153979423" />
-    <state width="1876" height="268" key="GridCell.Tab.0.left/0.27.1920.1053/3440.0.3440.1440@3440.0.3440.1440" timestamp="1604550305405" />
-    <state width="1876" height="303" key="GridCell.Tab.0.left/0.27.1920.1053@0.27.1920.1053" timestamp="1605578911303" />
-    <state width="1866" height="476" key="GridCell.Tab.0.left/0.27.3440.1413/3440.0.3440.1440@0.27.3440.1413" timestamp="1605493818971" />
-    <state width="2259" height="516" key="GridCell.Tab.0.left/0.27.3440.1413/3440.0.3440.1440@3440.0.3440.1440" timestamp="1605496295430" />
-    <state width="1800" height="351" key="GridCell.Tab.0.left/0.27.3440.1413@0.27.3440.1413" timestamp="1605547228795" />
-    <state width="1654" height="353" key="GridCell.Tab.0.left/0.27.5488.2540@0.27.5488.2540" timestamp="1604375130621" />
-    <state width="1923" height="409" key="GridCell.Tab.0.left/0.27.6880.1413@0.27.6880.1413" timestamp="1605670420176" />
-    <state width="1923" height="409" key="GridCell.Tab.0.right" timestamp="1605670420177">
-      <screen x="0" y="27" width="6880" height="1413" />
-    </state>
-    <state width="1800" height="335" key="GridCell.Tab.0.right/0.27.1920.1053/3440.0.3440.1440@0.27.1920.1053" timestamp="1605153979423" />
-    <state width="1876" height="268" key="GridCell.Tab.0.right/0.27.1920.1053/3440.0.3440.1440@3440.0.3440.1440" timestamp="1604550305405" />
-    <state width="1876" height="303" key="GridCell.Tab.0.right/0.27.1920.1053@0.27.1920.1053" timestamp="1605578911303" />
-    <state width="1866" height="476" key="GridCell.Tab.0.right/0.27.3440.1413/3440.0.3440.1440@0.27.3440.1413" timestamp="1605493818971" />
-    <state width="2259" height="516" key="GridCell.Tab.0.right/0.27.3440.1413/3440.0.3440.1440@3440.0.3440.1440" timestamp="1605496295430" />
-    <state width="1800" height="351" key="GridCell.Tab.0.right/0.27.3440.1413@0.27.3440.1413" timestamp="1605547228796" />
-    <state width="1654" height="353" key="GridCell.Tab.0.right/0.27.5488.2540@0.27.5488.2540" timestamp="1604375130622" />
-    <state width="1923" height="409" key="GridCell.Tab.0.right/0.27.6880.1413@0.27.6880.1413" timestamp="1605670420177" />
-    <state width="1983" height="340" key="GridCell.Tab.1.bottom" timestamp="1605545553495">
-      <screen x="0" y="27" width="3440" height="1413" />
-    </state>
-    <state width="1660" height="348" key="GridCell.Tab.1.bottom/0.27.1920.1053/3440.0.3440.1440@0.27.1920.1053" timestamp="1604844590101" />
-    <state width="1876" height="268" key="GridCell.Tab.1.bottom/0.27.1920.1053/3440.0.3440.1440@3440.0.3440.1440" timestamp="1604550306038" />
-    <state width="1876" height="242" key="GridCell.Tab.1.bottom/0.27.1920.1053@0.27.1920.1053" timestamp="1604717419840" />
-    <state width="1876" height="325" key="GridCell.Tab.1.bottom/0.27.3440.1413/3440.0.3440.1440@0.27.3440.1413" timestamp="1604596958899" />
-    <state width="1679" height="361" key="GridCell.Tab.1.bottom/0.27.3440.1413/3440.0.3440.1440@3440.0.3440.1440" timestamp="1605331860386" />
-    <state width="1983" height="340" key="GridCell.Tab.1.bottom/0.27.3440.1413@0.27.3440.1413" timestamp="1605545553495" />
-    <state width="1679" height="347" key="GridCell.Tab.1.bottom/0.27.6880.1413@0.27.6880.1413" timestamp="1605239454406" />
-    <state width="1983" height="340" key="GridCell.Tab.1.center" timestamp="1605545553494">
-      <screen x="0" y="27" width="3440" height="1413" />
-    </state>
-    <state width="1660" height="348" key="GridCell.Tab.1.center/0.27.1920.1053/3440.0.3440.1440@0.27.1920.1053" timestamp="1604844590101" />
-    <state width="1876" height="268" key="GridCell.Tab.1.center/0.27.1920.1053/3440.0.3440.1440@3440.0.3440.1440" timestamp="1604550306038" />
-    <state width="1876" height="242" key="GridCell.Tab.1.center/0.27.1920.1053@0.27.1920.1053" timestamp="1604717419840" />
-    <state width="1876" height="325" key="GridCell.Tab.1.center/0.27.3440.1413/3440.0.3440.1440@0.27.3440.1413" timestamp="1604596958899" />
-    <state width="1679" height="361" key="GridCell.Tab.1.center/0.27.3440.1413/3440.0.3440.1440@3440.0.3440.1440" timestamp="1605331860386" />
-    <state width="1983" height="340" key="GridCell.Tab.1.center/0.27.3440.1413@0.27.3440.1413" timestamp="1605545553494" />
-    <state width="1679" height="347" key="GridCell.Tab.1.center/0.27.6880.1413@0.27.6880.1413" timestamp="1605239454404" />
-    <state width="1983" height="340" key="GridCell.Tab.1.left" timestamp="1605545553493">
-      <screen x="0" y="27" width="3440" height="1413" />
-    </state>
-    <state width="1660" height="348" key="GridCell.Tab.1.left/0.27.1920.1053/3440.0.3440.1440@0.27.1920.1053" timestamp="1604844590101" />
-    <state width="1876" height="268" key="GridCell.Tab.1.left/0.27.1920.1053/3440.0.3440.1440@3440.0.3440.1440" timestamp="1604550306038" />
-    <state width="1876" height="242" key="GridCell.Tab.1.left/0.27.1920.1053@0.27.1920.1053" timestamp="1604717419840" />
-    <state width="1876" height="325" key="GridCell.Tab.1.left/0.27.3440.1413/3440.0.3440.1440@0.27.3440.1413" timestamp="1604596958899" />
-    <state width="1679" height="361" key="GridCell.Tab.1.left/0.27.3440.1413/3440.0.3440.1440@3440.0.3440.1440" timestamp="1605331860386" />
-    <state width="1983" height="340" key="GridCell.Tab.1.left/0.27.3440.1413@0.27.3440.1413" timestamp="1605545553493" />
-    <state width="1679" height="347" key="GridCell.Tab.1.left/0.27.6880.1413@0.27.6880.1413" timestamp="1605239454403" />
-    <state width="1983" height="340" key="GridCell.Tab.1.right" timestamp="1605545553495">
-      <screen x="0" y="27" width="3440" height="1413" />
-    </state>
-    <state width="1660" height="348" key="GridCell.Tab.1.right/0.27.1920.1053/3440.0.3440.1440@0.27.1920.1053" timestamp="1604844590101" />
-    <state width="1876" height="268" key="GridCell.Tab.1.right/0.27.1920.1053/3440.0.3440.1440@3440.0.3440.1440" timestamp="1604550306038" />
-    <state width="1876" height="242" key="GridCell.Tab.1.right/0.27.1920.1053@0.27.1920.1053" timestamp="1604717419840" />
-    <state width="1876" height="325" key="GridCell.Tab.1.right/0.27.3440.1413/3440.0.3440.1440@0.27.3440.1413" timestamp="1604596958899" />
-    <state width="1679" height="361" key="GridCell.Tab.1.right/0.27.3440.1413/3440.0.3440.1440@3440.0.3440.1440" timestamp="1605331860386" />
-    <state width="1983" height="340" key="GridCell.Tab.1.right/0.27.3440.1413@0.27.3440.1413" timestamp="1605545553494" />
-    <state width="1679" height="347" key="GridCell.Tab.1.right/0.27.6880.1413@0.27.6880.1413" timestamp="1605239454405" />
-    <state x="5418" y="326" width="900" height="752" key="SettingsEditor" timestamp="1605330159899">
-      <screen x="3440" y="0" width="3440" height="1440" />
-    </state>
-    <state x="5418" y="326" width="900" height="752" key="SettingsEditor/0.27.3440.1413/3440.0.3440.1440@3440.0.3440.1440" timestamp="1605330159899" />
-    <state x="3956" y="347" width="1007" height="737" key="SettingsEditor/0.27.6880.1413@0.27.6880.1413" timestamp="1604971584830" />
-    <state x="1649" y="36" width="1705" height="1399" key="dock-window-1" timestamp="1605415510601">
-      <screen x="0" y="27" width="3440" height="1413" />
-    </state>
-    <state x="1057" y="177" width="711" height="896" key="dock-window-1/0.27.1920.1053@0.27.1920.1053" timestamp="1605399783495" />
-    <state x="1649" y="36" width="1705" height="1399" key="dock-window-1/0.27.3440.1413/3440.0.3440.1440@3440.0.3440.1440" timestamp="1605415510601" />
-    <state x="622" y="489" width="613" height="624" key="find.popup" timestamp="1605541889838">
-      <screen x="0" y="27" width="3440" height="1413" />
-    </state>
-    <state x="347" y="371" width="581" height="562" key="find.popup/0.27.1920.1053/3440.0.3440.1440@0.27.1920.1053" timestamp="1605152398342" />
-    <state x="622" y="489" width="613" height="624" key="find.popup/0.27.3440.1413/3440.0.3440.1440@0.27.3440.1413" timestamp="1605491262791" />
-    <state x="4062" y="471" width="613" height="502" key="find.popup/0.27.3440.1413/3440.0.3440.1440@3440.0.3440.1440" timestamp="1605416311009" />
-    <state x="622" y="489" width="613" height="624" key="find.popup/0.27.3440.1413@0.27.3440.1413" timestamp="1605541889838" />
-    <state x="1244" y="489" width="1226" height="753" key="find.popup/0.27.6880.1413@0.27.6880.1413" timestamp="1605220854992" />
-    <state x="1460" y="327" width="1344" height="666" key="search.everywhere.popup" timestamp="1605668241887">
-      <screen x="0" y="27" width="6880" height="1413" />
-    </state>
-    <state x="4170" y="306" width="672" height="678" key="search.everywhere.popup/0.27.3440.1413/3440.0.3440.1440@3440.0.3440.1440" timestamp="1605496252015" />
-    <state x="1460" y="327" width="1344" height="666" key="search.everywhere.popup/0.27.6880.1413@0.27.6880.1413" timestamp="1605668241887" />
-  </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" type="DlvLineBreakpoint">
-          <url>file://$PROJECT_DIR$/fileSystem_test.go</url>
-          <line>121</line>
-          <option name="timeStamp" value="13" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
           <url>file://$PROJECT_DIR$/fileSystem_TestUtils.go</url>
-          <line>62</line>
+          <line>76</line>
           <option name="timeStamp" value="32" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="DlvLineBreakpoint">
@@ -306,14 +173,34 @@
           <line>46</line>
           <option name="timeStamp" value="35" />
         </line-breakpoint>
+        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+          <url>file://$PROJECT_DIR$/folderWatcher.go</url>
+          <line>87</line>
+          <option name="timeStamp" value="41" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+          <url>file://$PROJECT_DIR$/folderWatcher.go</url>
+          <line>219</line>
+          <option name="timeStamp" value="44" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+          <url>file://$PROJECT_DIR$/folderWatcher.go</url>
+          <line>154</line>
+          <option name="timeStamp" value="45" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+          <url>file://$PROJECT_DIR$/fileSystem_TestUtils.go</url>
+          <line>104</line>
+          <option name="timeStamp" value="47" />
+        </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
     <watches-manager>
       <configuration name="GoTestRunConfiguration">
-        <watch expression="fileInfo.IsDir()" language="go" />
-        <watch expression="filepath.Base(filePath)" language="go" />
-        <watch expression="filepath.Dir(filePath)" language="go" />
-        <watch expression="normalFilePath" language="go" />
+        <watch expression="len(newFileList)" />
+        <watch expression="len(w.watchedFiles)" />
+        <watch expression="len(fl)" />
+        <watch expression="w.Interval" language="go" />
       </configuration>
     </watches-manager>
   </component>

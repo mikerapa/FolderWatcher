@@ -330,7 +330,7 @@ func TestMultipleWatchRequests(t *testing.T){
 	removeFiles(false, append(newFiles1, newFiles2...)...)
 
 
-	time.Sleep(1 * time.Second)
+	time.Sleep(2 * time.Second)
 	// make sure the correct number of events were received
 	var eventType FileChange
 	for _, eventType= range []FileChange{Add, Remove, Write}{
@@ -341,6 +341,34 @@ func TestMultipleWatchRequests(t *testing.T){
 
 	watcher.Stop()
 
+}
+
+func TestReCalculateInterval(t *testing.T){
+	watcher := New()
+	_ = watcher.AddFolder(testFolderPath, false, false)
+	newFilePaths := createSequentialTestFiles(testFolderPath, 2000)
+
+	watcher.Start()
+	// collect events from the watcher
+	go func () {
+		for {
+			select{
+			case <- watcher.Stopped:
+				return
+			case <- watcher.FileChanged:
+			}
+		}
+	}()
+
+	time.Sleep(2* time.Second)
+
+	if watcher.Interval != 1000{
+		t.Errorf("Interval should be 1000, got %d", watcher.Interval )
+	}
+	time.Sleep(1 * time.Second)
+	watcher.Stop()
+
+	removeFiles(false, newFilePaths...)
 }
 
 func TestAddFileEvent(t *testing.T) {
